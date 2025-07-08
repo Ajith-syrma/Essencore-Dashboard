@@ -14,7 +14,7 @@
 	
 </head>
 <body class="bg-light">
-    <div class="container py-5">
+    <div class="container py-2">
         <div class="card shadow-lg rounded-4">
             <div class="card-header bg-primary text-white text-center rounded-top-4">
               @*   <h3>@ViewData["Title"]</h3> *@
@@ -26,28 +26,30 @@
                     <div class="alert alert-success">@ViewBag.Message</div>
                 } *@
 
-                <form asp-action="Index" asp-controller="CustomerMaster" method="post">
+                <form asp-action="ProdcutionMaster" asp-controller="DashBoardMaster" method="post">
                     <div class="row mb-4">
-                        <div class="col-md-4">
+                        <div class="col-md-3">
                             <label  class="form-label fw-semibold">Customer :</label>
                           @*   <select asp-for="Customers" asp-items="Model.Customers" class="dropdown-item-text">
                                 <option value="">-- Select Customer --</option>
                             </select> *@
                             @Html.DropDownListFor(a => a.Customer, Model.Customers, new { @id = "ddlcustomers", @class = "form-control" })
                         </div>
-                      @*   <div class="col-md-3">
-                            <label class="form-label fw-semibold">FG Name</label>
-                            <select asp-for="FGNames" class="form-select" asp-items="Model.FGNames" >
-                                <option value="">-- Select FG Name --</option>
+                        <div class="col-md-3">
+                            <label class="form-label fw-semibold">Type</label>
+                            <select asp-for="Type" class="form-select" >
+                                <option value="0">-- Select Type --</option>
+                                <option>V200</option>
+                                <option>Q600</option>
                                
                             </select>
-                        </div> *@
-                        <div class="col-md-4">
+                        </div>
+                        <div class="col-md-3">
                             <label class="form-label fw-semibold">FG Name :</label>
-                            <select id="ddlFgName" class="form-control">
+                            <select id="ddlFgName" asp-for="FGName" class="form-control">
                             </select>
                         </div>
-                        <div class="col-md-4">
+                        <div class="col-md-3">
                             <label asp-for="Manpower" class="form-label fw-semibold">Manpower</label>
                             <input asp-for="Manpower" class="form-control" placeholder="Enter Manpower" />
                             <span asp-validation-for="Manpower" class="text-danger"></span>
@@ -63,6 +65,54 @@
                     </div>
                 </form>
                 
+            </div>
+        </div>
+        <div class="container py-2">
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="card" style="padding:1%;height:350px;">
+                        <div style="height:320px; overflow-y:auto;">
+                            <div style="overflow-x:auto;">
+                                <table class="table table-bordered w-100" id="tbldocuploaded">
+                                    <thead class="text-center table-primary">
+                        <tr>
+                            <th hidden="hidden"></th>
+                            <th>Station</th>
+                            <th>Cycle Time</th>
+                            <th>Hourly Output</th>
+                            <th>Op Count</th>
+                            <th>Man Output</th>
+                            <th hidden="hidden"></th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        @if (Model != null)
+                        {
+                            @if(Model.inputDetails != null)
+                            {
+                          
+                        @foreach (var item in Model.inputDetails)
+                        {
+                            <tr>
+                                <td hidden="hidden">@item.TransactionId</td>
+                                <td>@item.station</td>
+                                <td>@item.cycle_time</td>
+                                <td>@item.Hourly_output</td>
+                                <td>@item.Op_count</td>
+                                <td>@item.Man_output</td>
+                                <td hidden="hidden">@item.FgId</td>
+                            </tr>
+                        }
+                            }
+
+                        }
+                                    </tbody>
+                    </table>
+                    </<div>
+                        </div>
+                            </div>
+                        </div>
+                    </div>
             </div>
         </div>
     </div>
@@ -101,3 +151,17 @@
         });
     });
 </script>
+
+<style>
+    .btn {
+        height: 2em;
+        font-family: serif;
+    }
+
+    thead th {
+        position: sticky;
+        top: 0;
+        background: #f8f9fa;
+        z-index: 2;
+    }
+</style>

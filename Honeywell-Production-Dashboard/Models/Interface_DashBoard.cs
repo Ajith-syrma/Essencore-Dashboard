@@ -6,6 +6,10 @@ namespace Honeywell_Production_Dashboard.Models
     {
         List<SelectListItem> getCustomerName();
         List<SelectListItem> getFgName(int customer);
+        int insertManpower(CustomerMasterModel customermodel);
+        List<ProductionDetails> getCustomerMasterModels();
+
+        List<Dashboard_HourlyOP> getHourlyOP(Dashboard_HourlyOP dashboard_HourlyOP);
 
     }
 }

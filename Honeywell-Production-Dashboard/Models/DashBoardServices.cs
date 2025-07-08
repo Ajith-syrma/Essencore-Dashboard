@@ -23,5 +23,22 @@ namespace Honeywell_Production_Dashboard.Models
             return fgName;
         }
 
+        public List<ProductionDetails> getCustomerMasterModels()
+        {
+            var prodetails= dataManagement.getCustomerMasterModels();
+            return prodetails;
+        }
+
+        public int insertManpower(CustomerMasterModel customermodel)
+        {
+            var result= dataManagement.insertManpower(customermodel);
+            return result;
+        }
+
+        public List<Dashboard_HourlyOP> getHourlyOP(Dashboard_HourlyOP dashboard_HourlyOP)
+        {
+            var resulthourly=dataManagement.getHourlyOP(dashboard_HourlyOP);
+            return resulthourly;
+        }
     }
 }
