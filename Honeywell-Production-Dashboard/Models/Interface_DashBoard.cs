@@ -12,5 +12,7 @@ namespace Honeywell_Production_Dashboard.Models
 
         List<Dashboard_HourlyOP> getHourlyOP(Dashboard_HourlyOP dashboard_HourlyOP);
 
+        loginmodel logindetails(loginmodel loginmodel);
+
     }
 }
