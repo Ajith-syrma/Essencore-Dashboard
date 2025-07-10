@@ -1,99 +1,29 @@
 ﻿@model CustomerMasterModel
-@{
 
+@{
+    ViewBag.Title = "Dashboard";
 }
-<h2>DashBoard</h2>
+
+<h2>Dashboard</h2>
+
+<!-- Bar Chart -->
 <canvas id="lineChart" width="800" height="400"></canvas>
+
+<!-- Pie Chart -->
+<canvas id="piechart" width="800" height="400" style="margin-top: 50px;"></canvas>
 
 <!-- jQuery -->
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
 <!-- Chart.js -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <script>
-    //       $(document).ready(function () {
-    //     debugger;
-    //     var fgname = '@Model.FGName';
-    //     var type = '@Model.Type';
-
-    //     $.ajax({
-    //         url: '/DashBoardMaster/GetChartData',
-    //         type: 'GET',
-    //         data: { Fgname: fgname, Type: type },
-    //         success: function (data) {
-    //             debugger;
-    //             const labels = [...new Set(data.map(item => item.hourIntervel))];
-    //             const testTypes = [...new Set(data.map(item => item.testType))];
-
-    //             const generateColor = () => '#' + Math.floor(Math.random() * 16777215).toString(16).padStart(6, '0');
-
-    //             const datasets = testTypes.map(testType => {
-    //                 const dataPoints = labels.map(label => {
-    //                     const match = data.find(x => x.testType === testType && x.hourIntervel === label);
-    //                     return match ? match.logCount : 0;
-    //                 });
-
-    //                 return {
-    //                     label: testType,
-    //                     data: dataPoints,
-    //                     backgroundColor: labels.map(() => generateColor()), // Colorful bars
-    //                     borderWidth: 1
-    //                 };
-    //             });
-
-    //             const ctx = document.getElementById('lineChart').getContext('2d');
-    //             new Chart(ctx, {
-    //                 type: 'bar',
-    //                 data: {
-    //                     labels: labels,
-    //                     datasets: datasets
-    //                 },
-    //                 options: {
-    //                     responsive: true,
-    //                     plugins: {
-    //                         title: {
-    //                             display: true,
-    //                             text: 'Log Count by Hour Interval and Test Type'
-    //                         },
-    //                         tooltip: {
-    //                             enabled: true,
-    //                             mode: 'index',
-    //                             intersect: false,
-    //                             callbacks: {
-    //                                 label: function (context) {
-    //                                     return `${context.dataset.label}: ${context.formattedValue}`;
-    //                                 }
-    //                             }
-    //                         },
-    //                         legend: {
-    //                             position: 'top'
-    //                         }
-    //                     },
-    //                     interaction: {
-    //                         mode: 'nearest',
-    //                         axis: 'x',
-    //                         intersect: false
-    //                     },
-    //                     scales: {
-    //                         x: {
-    //                             stacked: false
-    //                         },
-    //                         y: {
-    //                             beginAtZero: true
-    //                         }
-    //                     }
-    //                 }
-    //             });
-    //         },
-    //         error: function (err) {
-    //             console.error("Error loading chart data", err);
-    //         }
-    //     });
-    // });
-        $(document).ready(function () {
+    $(document).ready(function () {
         var fgname = '@Model.FGName';
         var type = '@Model.Type';
 
+        // ------- Bar Chart -------
         $.ajax({
             url: '/DashBoardMaster/GetChartData',
             type: 'GET',
@@ -119,8 +49,7 @@
                 });
 
                 const ctx = document.getElementById('lineChart').getContext('2d');
-
-                const chart = new Chart(ctx, {
+                new Chart(ctx, {
                     type: 'bar',
                     data: {
                         labels: labels,
@@ -131,67 +60,75 @@
                         plugins: {
                             title: {
                                 display: true,
-                                text: 'Log Count by Hour Interval and Test Type'
-                            },
-                            tooltip: {
-                                enabled: true
+                                text: 'Bar Chart: Log Count by Hour Interval and Test Type'
                             },
                             legend: {
                                 position: 'top'
                             }
                         },
-                        interaction: {
-                            mode: 'nearest',
-                            axis: 'x',
-                            intersect: false
-                        },
                         scales: {
                             x: { stacked: false },
                             y: { beginAtZero: true }
-                        },
-                        animation: {
-                            onComplete: () => {
-                                // Auto-cycle tooltips
-                                let datasetIndex = 0;
-                                let dataIndex = 0;
+                        }
+                    }
+                });
+            },
+            error: function (err) {
+                console.error("Error loading bar chart data", err);
+            }
+        });
 
-                                setInterval(() => {
-                                    const meta = chart.getDatasetMeta(datasetIndex);
-                                    if (!meta || !meta.data || meta.data.length === 0) return;
+        // ------- Pie Chart -------
+        // Load OEE pie chart
+        $.ajax({
+            url: '/DashBoardMaster/GetChartDataoee',
+            type: 'GET',
+            data: { Fgname: fgname, Type: type },
+            success: function (data) {
+                const labels = data.map(item => item.label);
+                const values = data.map(item => item.value);
 
-                                    const point = meta.data[dataIndex];
-                                    if (!point) return;
+                const generateColor = () => '#' + Math.floor(Math.random() * 16777215).toString(16).padStart(6, '0');
+                const backgroundColors = labels.map(() => generateColor());
 
-                                    chart.tooltip.setActiveElements([{
-                                        datasetIndex,
-                                        index: dataIndex
-                                    }], {
-                                        x: point.x,
-                                        y: point.y
-                                    });
-                                    chart.update();
-
-                                    dataIndex++;
-                                    if (dataIndex >= meta.data.length) {
-                                        dataIndex = 0;
-                                        datasetIndex++;
-                                        if (datasetIndex >= chart.data.datasets.length) {
-                                            datasetIndex = 0;
-                                        }
+                const ctx = document.getElementById('piechart').getContext('2d');
+                new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            data: values,
+                            backgroundColor: backgroundColors,
+                            borderWidth: 1,
+                            offset: 10,
+                            borderRadius: 20,
+                        }]
+                    },
+                    options: {
+                        cutout: '50%',
+                        responsive: true,
+                        plugins: {
+                            title: {
+                                display: true,
+                                text: 'OEE Breakdown: Availability, Performance, Quality'
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function (context) {
+                                        return `${context.label}: ${context.raw.toFixed(2)}%`;
                                     }
-                                }, 5000); // Change every 5 seconds
+                                }
+                            },
+                            legend: {
+                                position: 'bottom'
                             }
                         }
                     }
                 });
             },
             error: function (err) {
-                console.error("Error loading chart data", err);
+                console.error("Error loading OEE chart data", err);
             }
         });
     });
-
-
 </script>
-
-

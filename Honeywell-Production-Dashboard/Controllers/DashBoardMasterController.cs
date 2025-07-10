@@ -7,17 +7,20 @@ namespace Honeywell_Production_Dashboard.Controllers
     public class DashBoardMasterController : Controller
     {
         private readonly Interface_DashBoard interface_DashBoard;
+        private readonly DataManagement _OEEData;
 
-        public DashBoardMasterController(Interface_DashBoard _interface_DashBoard)
+
+        public DashBoardMasterController(Interface_DashBoard _interface_DashBoard, DataManagement OEEData)
         {
             interface_DashBoard= _interface_DashBoard;
+            _OEEData = OEEData;
         }
         public IActionResult ProdcutionMaster()
         {
             CustomerMasterModel customerMasterModel = new CustomerMasterModel();
             customerMasterModel.Customers = interface_DashBoard.getCustomerName();
             var getProdcutiondettails = interface_DashBoard.getCustomerMasterModels();
-          //  var getdowntime = interface_DashBoard.getdowntime();    
+              
             customerMasterModel.inputDetails = getProdcutiondettails;
             return View(customerMasterModel);
         }
@@ -55,5 +58,22 @@ namespace Honeywell_Production_Dashboard.Controllers
             var dashboardHourly = interface_DashBoard.getHourlyOP(objDashboard);
             return Json(dashboardHourly);
         }
+
+
+        [HttpGet]
+        public JsonResult GetChartDataoee(string Fgname, string type)
+        {
+            Dashboard_HourlyOP objoeeDashboard = new Dashboard_HourlyOP
+            {
+                FGName = Fgname,
+                TestType = type
+            };
+
+            // Call updated method that returns List<Dashboard_HourlyOP>
+            List<Dashboard_HourlyOP> OEE = interface_DashBoard.getoee(objoeeDashboard);
+
+            return Json(OEE); // Return as JSON to frontend
+        }
+
     }
 }
