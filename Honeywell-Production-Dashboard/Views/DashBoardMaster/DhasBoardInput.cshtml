@@ -70,6 +70,7 @@
         padding: 20px;
         border-radius: 10px;
         position: relative;
+        height: 350px;
         transition: background-color 0.3s;
     }
 
@@ -77,14 +78,15 @@
         background-color: var(--card-dark);
     }
 
-/*     .chart-card:hover {
-        transform: scale(1.01);
+    .chart-card:hover {
+        transform: scale(1.005);
     }
- */
+
     canvas {
         width: 100% !important;
-        height: auto !important;
+        height: 300px !important; /* Fixed height */
     }
+
 
     .spinner {
         position: absolute;
@@ -227,6 +229,7 @@
                 },
                 options: {
                     responsive: true,
+                    maintainAspectRatio: false,
                     plugins: {
                         title: { display: true, text: 'Lab LOS by Hour Interval' },
                         legend: { display: false },
@@ -269,6 +272,7 @@
                 },
                 options: {
                     responsive: true,
+                    maintainAspectRatio: false,
                     plugins: {
                         title: { display: true, text: 'Line Utilization by Hour Interval' },
                         legend: { display: false },
@@ -312,6 +316,7 @@
                 },
                 options: {
                     responsive: true,
+                    maintainAspectRatio: false,
                     plugins: {
                         title: { display: true, text: 'Yield by Stage' },
                         legend: { display: false },
@@ -352,6 +357,7 @@
                 },
                 options: {
                     responsive: true,
+                    maintainAspectRatio: false,
                     plugins: {
                         title: { display: true, text: 'Plan vs Actual by Hour Interval' },
                         legend: { display: true }
@@ -395,6 +401,7 @@
                 options: {
                     cutout: '50%',
                     responsive: true,
+                    maintainAspectRatio: false,
                     plugins: {
                         title: {
                             display: true,
