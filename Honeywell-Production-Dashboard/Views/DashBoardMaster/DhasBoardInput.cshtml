@@ -5,409 +5,416 @@
     ViewBag.Title = "Dashboard";
 }
 
-<h2>Dashboard</h2>
-<!-- Lab LOS Chart -->
-<canvas id="labLosChart" width="800" height="400"></canvas>
+<!-- Meta & Fonts -->
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="https://fonts.googleapis.com/css2?family=Roboto&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="~/css/dashboard.css" />
 
-<!-- Line Utilization Chart -->
-<canvas id="lineUtilChart" width="800" height="400" style="margin-top: 50px;"></canvas>
 
-<!-- Yield Chart -->
-<canvas id="yieldChart" width="800" height="400" style="margin-top: 50px;"></canvas>
+<style>
+    :root {
+        --bg-light: #f4f7fa;
+        --bg-dark: #1e1e1e;
+        --card-light: #ffffff;
+        --card-dark: #2c2c2c;
+        --text-light: #333;
+        --text-dark: #f4f4f4;
+    }
 
-<!-- Stage Output Chart -->
-<canvas id="lineChart1" width="800" height="400" style="margin-top: 50px;"></canvas>
+    body {
+        font-family: 'Roboto', sans-serif;
+        margin: 0;
+        padding: 20px;
+        background-color: var(--bg-light);
+        color: var(--text-light);
+        transition: background-color 0.3s, color 0.3s;
+    }
 
-<!-- Pie Chart -->
-<canvas id="piechart" width="800" height="400" style="margin-top: 50px;"></canvas>
+    body.dark-mode {
+        background-color: var(--bg-dark);
+        color: var(--text-dark);
+    }
 
-<!-- jQuery -->
+    h2 {
+        text-align: center;
+        margin-bottom: 30px;
+        font-size: 32px;
+    }
+
+    .toggle-container {
+        text-align: center;
+        margin-bottom: 20px;
+    }
+
+    .toggle-switch {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 16px;
+    }
+
+    .toggle-switch input {
+        transform: scale(1.2);
+    }
+
+    .dashboard-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+        gap: 30px;
+    }
+
+    .chart-card {
+        background-color: var(--card-light);
+        color: inherit;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+        padding: 20px;
+        border-radius: 10px;
+        position: relative;
+        transition: background-color 0.3s;
+    }
+
+    body.dark-mode .chart-card {
+        background-color: var(--card-dark);
+    }
+
+    .chart-card:hover {
+        transform: scale(1.01);
+    }
+
+    canvas {
+        width: 100% !important;
+        height: auto !important;
+    }
+
+    .spinner {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 40px;
+        height: 40px;
+        border: 4px solid #ccc;
+        border-top-color: #333;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        z-index: 10;
+    }
+
+
+
+    footer {
+        text-align: center;
+        padding: 20px;
+        font-size: 14px;
+        color: #777;
+    }
+</style>
+
+
+
+
+<h2>📊 Honeywell Dashboard</h2>
+
+<!-- Dark Mode Toggle -->
+<div class="toggle-container">
+    <label class="toggle-switch">
+        <input type="checkbox" id="darkModeToggle" />
+        Dark Mode
+    </label>
+</div>
+
+<div class="dashboard-container">
+    <div class="chart-card">
+        <div class="spinner" id="spinnerLabLos"></div>
+        <canvas id="labLosChart"></canvas>
+    </div>
+    <div class="chart-card">
+        <div class="spinner" id="spinnerLineUtil"></div>
+        <canvas id="lineUtilChart"></canvas>
+    </div>
+    <div class="chart-card">
+        <div class="spinner" id="spinnerYield"></div>
+        <canvas id="yieldChart"></canvas>
+    </div>
+    <div class="chart-card">
+        <div class="spinner" id="spinnerStage"></div>
+        <canvas id="lineChart1"></canvas>
+    </div>
+    <div class="chart-card">
+        <div class="spinner" id="spinnerPie"></div>
+        <canvas id="piechart"></canvas>
+    </div>
+</div>
+
+<footer>
+    &copy; @DateTime.Now.Year - Manufacturing Analytics Dashboard
+</footer>
+
+<!-- jQuery & Chart.js -->
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-
-<!-- Chart.js -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Plugin to draw text in the center of the doughnut chart
+    const centerTextPlugin = {
+        id: 'centerText',
+        beforeDraw(chart) {
+            const { width, height, ctx } = chart;
+            ctx.restore();
+            const fontSize = (height / 150).toFixed(2);
+            ctx.font = `${fontSize}em sans-serif`;
+            ctx.textBaseline = "middle";
+
+            const text = chart.config.options.plugins.centerText?.text || '';
+            const textX = Math.round((width - ctx.measureText(text).width) / 2);
+            const textY = height / 2;
+
+            ctx.fillText(text, textX, textY);
+            ctx.save();
+        }
+    };
+</script>
 
 <script>
     $(document).ready(function () {
-        var fgname = @Html.Raw(JsonSerializer.Serialize(Model.FGName));
-        var type = @Html.Raw(JsonSerializer.Serialize(Model.Type));
+        const fgname = @Html.Raw(JsonSerializer.Serialize(Model.FGName));
+        const type = @Html.Raw(JsonSerializer.Serialize(Model.Type));
 
+        const toggle = document.getElementById('darkModeToggle');
+        const currentMode = localStorage.getItem('theme');
 
-        // ------------Bar chart for lab_ls
+        if (currentMode === 'dark') {
+            document.body.classList.add('dark-mode');
+            toggle.checked = true;
+        }
 
-       function generateColor() {
-            return '#' + Math.floor(Math.random() * 16777215).toString(16).padStart(6, '0');
-       }
-
-        $.ajax({
-            url: '/DashBoardMaster/GetlablosData',
-            type: 'GET',
-            data: { Fgname: fgname, Type: type },
-            success: function (data) {
-                console.log("Lab LOS Data:", data);
-
-                if (!data || data.length === 0) {
-                    console.warn("No data received for Lab LOS Chart.");
-                    return;
-                }
-
-                // Extract hour intervals and labor loss values
-                const labels = data.map(item => item.hourIntervel);
-                const labLossValues = data.map(item => item.labr_loss);
-                const backgroundColors = labels.map(() => generateColor());
-
-                const ctx = document.getElementById('labLosChart').getContext('2d');
-
-                // Destroy old chart if exists
-                if (window.labLosChartInstance) {
-                    window.labLosChartInstance.destroy();
-                }
-
-                window.labLosChartInstance = new Chart(ctx, {
-                    type: 'bar',
-                    data: {
-                        labels: labels,
-                        datasets: [{
-                            label: 'Labor Loss (%)',
-                            data: labLossValues,
-                            backgroundColor: backgroundColors,
-                            borderWidth: 1
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        plugins: {
-                            title: {
-                                display: true,
-                                text: 'Lab LOS by Hour Interval'
-                            },
-                            legend: {
-                                display: false
-                            },
-                            tooltip: {
-                                callbacks: {
-                                    label: function (context) {
-                                        return `${context.label}: ${context.raw.toFixed(2)}%`;
-                                    }
-                                }
-                            }
-                        },
-                        scales: {
-                            x: {
-                                title: {
-                                    display: true,
-                                    text: 'Hour Interval'
-                                }
-                            },
-                            y: {
-                                beginAtZero: false,
-                                title: {
-                                    display: true,
-                                    text: 'Labor Loss (%)'
-                                }
-                            }
-                        }
-                    }
-                });
-            },
-            error: function (err) {
-                console.error("Error loading Lab LOS chart data", err);
-            }
-        });
-    
-
-        // ------------Bar chart for Line utilization
-        $.ajax({
-            url: '/DashBoardMaster/GetlineutilData',
-            type: 'GET',
-            data: { Fgname: fgname, Type: type },
-            success: function (data) {
-                console.log("Line Utilization Data:", data);
-
-                if (!data || data.length === 0) {
-                    console.warn("No data received for Line Utilization Chart.");
-                    return;
-                }
-
-                const labels = data.map(item => item.hourIntervel);
-                const producedQty = data.map(item => item.line_util);
-                const backgroundColors = labels.map(() => generateColor());
-
-                const ctx = document.getElementById('lineUtilChart').getContext('2d');
-
-                if (window.lineUtilChartInstance) {
-                    window.lineUtilChartInstance.destroy();
-                }
-
-                window.lineUtilChartInstance = new Chart(ctx, {
-                    type: 'bar',
-                    data: {
-                        labels: labels,
-                        datasets: [{
-                            label: 'Line Utilization',
-                            data: producedQty,
-                            backgroundColor: backgroundColors,
-                            borderWidth: 1
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        plugins: {
-                            title: {
-                                display: true,
-                                text: 'Line Utilization by Hour Interval'
-                            },
-                            legend: {
-                                display: false
-                            },
-                            tooltip: {
-                                callbacks: {
-                                    label: function (context) {
-                                        return `${context.label}: ${context.raw.toFixed(2)}%`;
-                                    }
-                                }
-                            }
-                        },
-                        scales: {
-                            x: {
-                                title: {
-                                    display: true,
-                                    text: 'Hour Interval'
-                                }
-                            },
-                            y: {
-                                beginAtZero: true,
-                                title: {
-                                    display: true,
-                                    text: 'Line Utilization'
-                                }
-                            }
-                        }
-                    }
-                });
-            },
-            error: function (err) {
-                console.error("Error loading Line Utilization chart data", err);
-            }
-        });
-        // ------------Bar chart for Yield calculation
-        $.ajax({
-            url: '/DashBoardMaster/GetyieldData',
-            type: 'GET',
-            data: { Fgname: fgname, Type: type },
-            success: function (data) {
-                console.log("Yield:", data);
-                if (!data || data.length === 0) {
-                    console.warn("No data returned for Yield Chart.");
-                    return;
-                }
-
-                // Filter for valid yield data
-                const filtered = data.filter(d => d.yield != null && d.stage != null);
-
-                if (filtered.length === 0) {
-                    console.warn("No valid yield entries with stage.");
-                    return;
-                }
-
-                // Prepare chart data
-                const labels = filtered.map(item => item.stage);
-                const yieldValues = filtered.map(item => item.yield);
-                const backgroundColors = labels.map(() => generateColor());
-
-                const ctx = document.getElementById('yieldChart').getContext('2d');
-
-                if (window.yieldChartInstance) {
-                    window.yieldChartInstance.destroy();
-                }
-
-                // Create a new chart
-                window.yieldChartInstance = new Chart(ctx, {
-                    type: 'bar',
-                    data: {
-                        labels: labels,
-                        datasets: [{
-                            label: 'Yield (%)',
-                            data: yieldValues,
-                            backgroundColor: backgroundColors,
-                            borderWidth: 1
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        plugins: {
-                            title: {
-                                display: true,
-                                text: 'Yield by Stage'
-                            },
-                            tooltip: {
-                                callbacks: {
-                                    label: function (context) {
-                                        return `${context.label}: ${context.raw.toFixed(2)}%`;
-                                    }
-                                }
-                            },
-                            legend: {
-                                display: false
-                            }
-                        },
-                        scales: {
-                            x: {
-                                title: { display: true, text: 'Stage' }
-                            },
-                            y: {
-                                beginAtZero: true,
-                                title: { display: true, text: 'Yield (%)' }
-                            }
-                        }
-                    }
-                });
-            },
-            error: function (err) {
-                console.error("Error loading Yield chart data", err);
+        toggle.addEventListener('change', function () {
+            if (this.checked) {
+                document.body.classList.add('dark-mode');
+                localStorage.setItem('theme', 'dark');
+            } else {
+                document.body.classList.remove('dark-mode');
+                localStorage.setItem('theme', 'light');
             }
         });
 
+        const generateColor = () => '#' + Math.floor(Math.random() * 16777215).toString(16).padStart(6, '0');
 
+        // Show all spinners initially
+        $('#spinnerLabLos, #spinnerLineUtil, #spinnerYield, #spinnerStage, #spinnerPie').show();
 
+        // === 1. LAB LOS CHART ===
+        $.get('/DashBoardMaster/GetlablosData', { Fgname: fgname, Type: type }, function (data) {
+            $('#spinnerLabLos').hide();
+            if (!data || data.length === 0) return;
 
-        // ------- Bar Chart for the stage output-------
-        $.ajax({
-            url: '/DashBoardMaster/GetChartData',
-            type: 'GET',
-            data: { Fgname: fgname, Type: type },
-            success: function (data) {
-                console.log("chartdata:", data);
-                if (!data || data.length === 0) {
-                    console.warn("No data returned for the chart.");
-                    return;
-                }
+            const labels = data.map(d => d.hourIntervel);
+            const values = data.map(d => d.labr_loss);
+            const bg = labels.map(() => generateColor());
 
-                // Extract unique hour intervals
-                const labels = data.map(item => item.hourIntervel || "N/A");
+            const ctx = document.getElementById('labLosChart').getContext('2d');
+            if (window.labLosChartInstance) window.labLosChartInstance.destroy();
 
-                // Extract target and logCounts for each interval
-                const targets = data.map(item => item.target || 0);
-                const logCounts = data.map(item => item.logCount || 0);
-
-                const ctx = document.getElementById('lineChart1').getContext('2d');
-
-                // Destroy previous chart if it exists
-                if (window.lineChartInstance) {
-                    window.lineChartInstance.destroy();
-                }
-
-                // Create grouped bar chart
-                window.lineChartInstance = new Chart(ctx, {
-                    type: 'bar',
-                    data: {
-                        labels: labels,
-                        datasets: [
-                            {
-                                label: 'Plan',
-                                data: targets,
-                               // backgroundColor: '#f28e2b' 
-                                backgroundColor: generateColor()
-                            },
-                            {
-                                label: 'Actual',
-                                data: logCounts,
-                               // backgroundColor: '#4e79a7' 
-                                backgroundColor: generateColor() 
-                            }
-                        ]
-                    },
-                    options: {
-                        responsive: true,
-                        plugins: {
-                            title: {
-                                display: true,
-                                text: 'Bar Chart: Plan vs Actual by Hour Interval'
-                            },
-                            legend: {
-                                display: true
-                            }
-                        },
-                        scales: {
-                            x: {
-                                title: {
-                                    display: true,
-                                    text: 'Hour Interval'
-                                }
-                            },
-                            y: {
-                                beginAtZero: true,
-                                title: {
-                                    display: true,
-                                    text: 'Count'
-                                }
+            window.labLosChartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels,
+                    datasets: [{
+                        label: 'Labor Loss (%)',
+                        data: values,
+                        backgroundColor: bg,
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        title: { display: true, text: 'Lab LOS by Hour Interval' },
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: context => `${context.label}: ${context.raw.toFixed(2)}%`
                             }
                         }
+                    },
+                    scales: {
+                        x: { title: { display: true, text: 'Hour Interval' } },
+                        y: { title: { display: true, text: 'Labor Loss (%)' } }
                     }
-                });
-            },
-            error: function (err) {
-                console.error("Error loading bar chart data", err);
-            }
+                }
+            });
         });
 
+        // === 2. LINE UTILIZATION CHART ===
+        $.get('/DashBoardMaster/GetlineutilData', { Fgname: fgname, Type: type }, function (data) {
+            $('#spinnerLineUtil').hide();
+            if (!data || data.length === 0) return;
 
+            const labels = data.map(d => d.hourIntervel);
+            const values = data.map(d => d.line_util);
+            const bg = labels.map(() => generateColor());
 
+            const ctx = document.getElementById('lineUtilChart').getContext('2d');
+            if (window.lineUtilChartInstance) window.lineUtilChartInstance.destroy();
 
-        // ------- Pie Chart -------
-        // Load OEE pie chart
-        $.ajax({
-            url: '/DashBoardMaster/GetChartDataoee',
-            type: 'GET',
-            data: { Fgname: fgname, Type: type },
-            success: function (data) {
-                const labels = data.map(item => item.label);
-                const values = data.map(item => item.value);
-
-                const generateColor = () => '#' + Math.floor(Math.random() * 16777215).toString(16).padStart(6, '0');
-                const backgroundColors = labels.map(() => generateColor());
-
-                const ctx = document.getElementById('piechart').getContext('2d');
-                new Chart(ctx, {
-                    type: 'doughnut',
-                    data: {
-                        labels: labels,
-                        datasets: [{
-                            data: values,
-                            backgroundColor: backgroundColors,
-                            borderWidth: 1,
-                            offset: 10,
-                            borderRadius: 20,
-                        }]
-                    },
-                    options: {
-                        cutout: '50%',
-                        responsive: true,
-                        plugins: {
-                            title: {
-                                display: true,
-                                text: 'OEE Breakdown: Availability, Performance, Quality'
-                            },
-                            tooltip: {
-                                callbacks: {
-                                    label: function (context) {
-                                        return `${context.label}: ${context.raw.toFixed(2)}%`;
-                                    }
-                                }
-                            },
-                            legend: {
-                                position: 'bottom'
+            window.lineUtilChartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels,
+                    datasets: [{
+                        label: 'Line Utilization (%)',
+                        data: values,
+                        backgroundColor: bg,
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        title: { display: true, text: 'Line Utilization by Hour Interval' },
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: context => `${context.label}: ${context.raw.toFixed(2)}%`
                             }
                         }
+                    },
+                    scales: {
+                        x: { title: { display: true, text: 'Hour Interval' } },
+                        y: { title: { display: true, text: 'Line Utilization (%)' } }
                     }
-                });
-            },
-            error: function (err) {
-                console.error("Error loading OEE chart data", err);
-            }
+                }
+            });
+        });
+
+        // === 3. YIELD CHART ===
+        $.get('/DashBoardMaster/GetyieldData', { Fgname: fgname, Type: type }, function (data) {
+            $('#spinnerYield').hide();
+            const filtered = data.filter(d => d.yield != null && d.stage != null);
+            if (filtered.length === 0) return;
+
+            const labels = filtered.map(d => d.stage);
+            const values = filtered.map(d => d.yield);
+            const bg = labels.map(() => generateColor());
+
+            const ctx = document.getElementById('yieldChart').getContext('2d');
+            if (window.yieldChartInstance) window.yieldChartInstance.destroy();
+
+            window.yieldChartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels,
+                    datasets: [{
+                        label: 'Yield (%)',
+                        data: values,
+                        backgroundColor: bg,
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        title: { display: true, text: 'Yield by Stage' },
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: context => `${context.label}: ${context.raw.toFixed(2)}%`
+                            }
+                        }
+                    },
+                    scales: {
+                        x: { title: { display: true, text: 'Stage' } },
+                        y: { title: { display: true, text: 'Yield (%)' }, beginAtZero: true }
+                    }
+                }
+            });
+        });
+
+        // === 4. STAGE OUTPUT ===
+        $.get('/DashBoardMaster/GetChartData', { Fgname: fgname, Type: type }, function (data) {
+            $('#spinnerStage').hide();
+            if (!data || data.length === 0) return;
+
+            const labels = data.map(d => d.hourIntervel || "N/A");
+            const targets = data.map(d => d.target || 0);
+            const actuals = data.map(d => d.logCount || 0);
+
+            const ctx = document.getElementById('lineChart1').getContext('2d');
+            if (window.lineChartInstance) window.lineChartInstance.destroy();
+
+            window.lineChartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels,
+                    datasets: [
+                        { label: 'Plan', data: targets, backgroundColor: generateColor() },
+                        { label: 'Actual', data: actuals, backgroundColor: generateColor() }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        title: { display: true, text: 'Plan vs Actual by Hour Interval' },
+                        legend: { display: true }
+                    },
+                    scales: {
+                        x: { title: { display: true, text: 'Hour Interval' } },
+                        y: { beginAtZero: true, title: { display: true, text: 'Count' } }
+                    }
+                }
+            });
+        });
+
+        // === 5. PIE CHART (OEE) ===
+        $.get('/DashBoardMaster/GetChartDataoee', { Fgname: fgname, Type: type }, function (data) {
+            $('#spinnerPie').hide();
+            if (!data || data.length === 0) return;
+
+            const labels = data.map(d => d.label);
+            const values = data.map(d => d.value);
+            const bg = labels.map(() => generateColor());
+
+            // Calculate OEE
+            const oeeValue = (values[0] / 100) * (values[1] / 100) * (values[2] / 100);
+            const oeePercentage = (oeeValue * 100).toFixed(2); // As percentage
+
+            const ctx = document.getElementById('piechart').getContext('2d');
+            if (window.oeeChartInstance) window.oeeChartInstance.destroy();
+
+            window.oeeChartInstance = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels,
+                    datasets: [{
+                        data: values,
+                        backgroundColor: bg,
+                        borderWidth: 1,
+                        offset: 10,
+                        borderRadius: 20
+                    }]
+                },
+                options: {
+                    cutout: '50%',
+                    responsive: true,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'OEE Breakdown: Availability, Performance, Quality'
+                        },
+                        legend: {
+                            position: 'bottom'
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: context => `${context.label}: ${context.raw.toFixed(2)}%`
+                            }
+                        },
+                        centerText: {
+                            text: `${oeePercentage}%`
+                        }
+                    }
+                },
+                plugins: [centerTextPlugin]
+            });
         });
     });
-</script> 
-
-
-
+</script>
