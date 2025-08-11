@@ -10,6 +10,7 @@ namespace Honeywell_Production_Dashboard.Models
         public int Manpower { get; set; }
         public string Type {  get; set; }
         public decimal downtime { get; set; }
+        public string shift_val { get; set; }
 
         public List<SelectListItem> Customers { get; set; }
         public List<SelectListItem> FGNames { get; set; }

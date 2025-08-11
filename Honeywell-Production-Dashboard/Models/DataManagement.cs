@@ -98,6 +98,9 @@ namespace Honeywell_Production_Dashboard.Models
                         cmdinsert.CommandType = CommandType.StoredProcedure;
                         cmdinsert.Parameters.AddWithValue("@Op_count", customermodel.Manpower);
                         cmdinsert.Parameters.AddWithValue("@Fg_Id", customermodel.FGName);
+                        cmdinsert.Parameters.AddWithValue("@shift_val", customermodel.shift_val);
+                        cmdinsert.Parameters.AddWithValue("@fg_type", customermodel.Type);
+
                         sqlinsert.Open();
                         manpowerResult = cmdinsert.ExecuteNonQuery();
                         sqlinsert.Close();
@@ -169,13 +172,13 @@ namespace Honeywell_Production_Dashboard.Models
                     {
                         sqlcmdhourly.CommandType = CommandType.StoredProcedure;
                        // sqlcmdhourly.Parameters.AddWithValue("@Type", dashboard_HourlyOP.TestType);
-                        sqlcmdhourly.Parameters.AddWithValue("@Type", "V200");
+                        sqlcmdhourly.Parameters.AddWithValue("@Type", "Q600");
                         // sqlcmdhourly.Parameters.AddWithValue("@fg",dashboard_HourlyOP.FGName);
-                        sqlcmdhourly.Parameters.AddWithValue("@fg", "ECH3HWI00001");
+                        sqlcmdhourly.Parameters.AddWithValue("@fg", "ECH1HML00002");
                         //sqlcmdhourly.Parameters.AddWithValue("@date", date.ToString("dd-MM-yyyy"));
-                        sqlcmdhourly.Parameters.AddWithValue("@date", "01-02-2025");
+                        sqlcmdhourly.Parameters.AddWithValue("@date", "24-08-2024");
                         // sqlcmdhourly.Parameters.AddWithValue("@shift", shift);
-                        sqlcmdhourly.Parameters.AddWithValue("@shift", "SHIFT-B");
+                        sqlcmdhourly.Parameters.AddWithValue("@shift", "SHIFT-A");
                         SqlDataAdapter dahourly = new SqlDataAdapter(sqlcmdhourly);
                         DataTable dthourly = new DataTable();
                         dahourly.Fill(dthourly);
@@ -184,7 +187,7 @@ namespace Honeywell_Production_Dashboard.Models
                             foreach (DataRow dr in dthourly.Rows)
                             {
                                 objDashboard = new Dashboard_HourlyOP();
-                                objDashboard.TestType = dr["TESTTYPE"].ToString();
+                                objDashboard.Target = Convert.ToInt32(dr["Target"]);
                                 objDashboard.HourIntervel = dr["HOURINTERVAL"].ToString();
                                 objDashboard.LogCount = Convert.ToInt32(dr["LogCount"].ToString());
                                 lstDashboard.Add(objDashboard);
@@ -199,8 +202,158 @@ namespace Honeywell_Production_Dashboard.Models
                 return lstDashboard;
             }
 
-            return lstDashboard;
+            return lstDashboard; 
         }
+
+
+        public List<Dashboard_HourlyOP> getHourlyyield(Dashboard_HourlyOP dashboard_HourlyOP)
+        {
+            List<Dashboard_HourlyOP> lstyieldDashboard = new List<Dashboard_HourlyOP>();
+            Dashboard_HourlyOP objDashboard1;
+            try
+            {
+                var date = DateTime.Now.Date;
+                string shift = GetShiftLabel(DateTime.Now);
+
+                using (SqlConnection sqlhorly = new SqlConnection(Prod_ConnectionString))
+                {
+                    using (SqlCommand sqlcmdyield = new SqlCommand("DIGI_DASHBOARD_YIELDBYSTAGE", sqlhorly))
+                    {
+                        sqlcmdyield.CommandType = CommandType.StoredProcedure;
+                        // sqlcmdhourly.Parameters.AddWithValue("@Type", dashboard_HourlyOP.TestType);
+                        sqlcmdyield.Parameters.AddWithValue("@Type", "V200");
+                        // sqlcmdhourly.Parameters.AddWithValue("@fg",dashboard_HourlyOP.FGName);
+                        sqlcmdyield.Parameters.AddWithValue("@fg", "ECH3HWI00001");
+                        //sqlcmdhourly.Parameters.AddWithValue("@date", date.ToString("dd-MM-yyyy"));
+                        sqlcmdyield.Parameters.AddWithValue("@date", "01-02-2025");
+                        // sqlcmdhourly.Parameters.AddWithValue("@shift", shift);
+                        sqlcmdyield.Parameters.AddWithValue("@shift", "SHIFT-B");
+                        SqlDataAdapter dyhourly = new SqlDataAdapter(sqlcmdyield);
+                        DataTable dtyhourly = new DataTable();
+                        dyhourly.Fill(dtyhourly);
+                        if (dtyhourly.Rows.Count > 0)
+                        {
+                            foreach (DataRow dr in dtyhourly.Rows)
+                            {
+                                objDashboard1 = new Dashboard_HourlyOP();
+                                objDashboard1.Stage = dr["STAGE"].ToString();
+                                //objDashboard1.HourIntervel = dr["HOURINTERVAL"].ToString();
+                                objDashboard1.Passcountyield = Convert.ToInt32(dr["PassCount"].ToString());
+                                objDashboard1.Failcountyield = Convert.ToInt32(dr["FailCount"].ToString());
+                                lstyieldDashboard.Add(objDashboard1);
+                            }
+                        }
+                    }
+
+                }
+            }
+            catch (Exception ex)
+            {
+                return lstyieldDashboard;
+            }
+
+            return lstyieldDashboard; 
+        }
+
+        public List<Lineutilization> getlineutildata(Lineutilization dashboard_lineutildata_OP)
+        {
+            List<Lineutilization> lstutildataDashboard = new List<Lineutilization>();
+            Lineutilization objDashboard2;
+            try
+            {
+                var date = DateTime.Now.Date;
+                string shift = GetShiftLabel(DateTime.Now);
+
+                using (SqlConnection sqlhorly = new SqlConnection(Prod_ConnectionString))
+                {
+                    using (SqlCommand sqlcmdutil = new SqlCommand("DIGI_DASHBOARD_LINEUTILIAZTIONBYSTAGE", sqlhorly))
+                    {
+                        sqlcmdutil.CommandType = CommandType.StoredProcedure;
+                        // sqlcmdhourly.Parameters.AddWithValue("@Type", dashboard_HourlyOP.TestType);
+                        sqlcmdutil.Parameters.AddWithValue("@Type", "Q600");
+                        // sqlcmdhourly.Parameters.AddWithValue("@fg",dashboard_HourlyOP.FGName);
+                        sqlcmdutil.Parameters.AddWithValue("@fg", "ECH1HML00002");
+                        //sqlcmdhourly.Parameters.AddWithValue("@date", date.ToString("dd-MM-yyyy"));
+                        sqlcmdutil.Parameters.AddWithValue("@date", "24-08-2024");
+                        // sqlcmdhourly.Parameters.AddWithValue("@shift", shift);
+                        sqlcmdutil.Parameters.AddWithValue("@shift", "SHIFT-A");
+                        SqlDataAdapter dyhourly = new SqlDataAdapter(sqlcmdutil);
+                        DataTable dtyhourly = new DataTable();
+                        dyhourly.Fill(dtyhourly);
+                        if (dtyhourly.Rows.Count > 0)
+                        {
+                            foreach (DataRow dr in dtyhourly.Rows)
+                            {
+                                objDashboard2 = new Lineutilization();
+                               // objDashboard2.stage = dr["STAGE"].ToString();
+                                objDashboard2.HourIntervel = dr["HOURINTERVAL"].ToString();
+                                objDashboard2.planned_qty = Convert.ToInt32(dr["planned_qty"].ToString());
+                                objDashboard2.Produced_qty = Convert.ToInt32(dr["Produced_qty"].ToString());
+                                lstutildataDashboard.Add(objDashboard2);
+                            }
+                        }
+                    }
+
+                }
+            }
+            catch (Exception ex)
+            {
+                return lstutildataDashboard;
+            }
+
+            return lstutildataDashboard;
+        }
+
+        public List<labrlosspercentage> getlablosData(labrlosspercentage dashboard_lablossper_OP)
+        {
+            List<labrlosspercentage> lstlabrDashboard = new List<labrlosspercentage>();
+            labrlosspercentage objDashboard3;
+            try
+            {
+                var date = DateTime.Now.Date;
+                string shift = GetShiftLabel(DateTime.Now);
+
+                using (SqlConnection sqlhorly = new SqlConnection(Prod_ConnectionString))
+                {
+                    using (SqlCommand sqlcmdlabr = new SqlCommand("DIGI_DASHBOARD_LABLOSSPERCENTAGE", sqlhorly))
+                    {
+                        sqlcmdlabr.CommandType = CommandType.StoredProcedure;
+                        // sqlcmdhourly.Parameters.AddWithValue("@Type", dashboard_HourlyOP.TestType);
+                        sqlcmdlabr.Parameters.AddWithValue("@Type", "Q600");
+                        // sqlcmdhourly.Parameters.AddWithValue("@fg",dashboard_HourlyOP.FGName);
+                        sqlcmdlabr.Parameters.AddWithValue("@fg", "ECH1HML00002");
+                        //sqlcmdhourly.Parameters.AddWithValue("@date", date.ToString("dd-MM-yyyy"));
+                        sqlcmdlabr.Parameters.AddWithValue("@date", "24-08-2024");
+                        // sqlcmdhourly.Parameters.AddWithValue("@shift", shift);
+                        sqlcmdlabr.Parameters.AddWithValue("@shift", "SHIFT-A");
+                        SqlDataAdapter dyhourly = new SqlDataAdapter(sqlcmdlabr);
+                        DataTable dtyhourly = new DataTable();
+                        dyhourly.Fill(dtyhourly);
+                        if (dtyhourly.Rows.Count > 0)
+                        {
+                            foreach (DataRow dr in dtyhourly.Rows)
+                            {
+                                objDashboard3 = new labrlosspercentage();
+                                // objDashboard2.stage = dr["STAGE"].ToString();
+                                objDashboard3.HourIntervel = dr["HOURINTERVAL"].ToString();
+                                objDashboard3.Actual_work_hrs = Convert.ToInt32(dr["Actualworkedhours"].ToString());
+                                objDashboard3.Produced_qty = Convert.ToInt32(dr["Produced_qty"].ToString());
+                                lstlabrDashboard.Add(objDashboard3);
+                            }
+                        }
+                    }
+
+                }
+            }
+            catch (Exception ex)
+            {
+                return lstlabrDashboard;
+            }
+
+            return lstlabrDashboard;
+        }
+
+
 
         public loginmodel logindetails(loginmodel loginmodel)
         {
@@ -249,6 +402,49 @@ namespace Honeywell_Production_Dashboard.Models
             {
                 return "SHIFT-C"; // 12:00 AM - 7:59 AM
             }
+        }
+
+        public int getmanpowerdata(string fg,string type)
+        {
+            int result = 0;
+            var date = DateTime.Now.Date;
+            string shift = GetShiftLabel(DateTime.Now);
+
+            try
+            {
+                using (SqlConnection sqlConnection = new SqlConnection(ConnectionString))
+                {
+                    using (SqlCommand cmd = new SqlCommand("pro_getmanpower_ct", sqlConnection))
+                    {
+                        cmd.CommandType = CommandType.StoredProcedure;
+
+                       // cmd.Parameters.AddWithValue("@input", "idletime");
+                        cmd.Parameters.AddWithValue("@Type", "V200");
+                        cmd.Parameters.AddWithValue("@fg", "ECH3HWI00001");
+                        //cmd.Parameters.AddWithValue("@type", oeedowntime.TestType);
+                        //cmd.Parameters.AddWithValue("@type", oeedowntime.TestType);
+                        // cmd.Parameters.AddWithValue("@fg", oeedowntime.FGName);
+                        cmd.Parameters.AddWithValue("@date", "2025-08-08");
+                        cmd.Parameters.AddWithValue("@shift", "SHIFT-A");
+
+                        sqlConnection.Open();
+                        var response = cmd.ExecuteScalar();
+                        sqlConnection.Close();
+
+                        if (response != null && int.TryParse(response.ToString(), out int output))
+                        {
+                            result = output;
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                // Optionally log exception
+                return 0;
+            }
+
+            return result;
         }
 
         public int getdowntime(Dashboard_HourlyOP oeedowntime)

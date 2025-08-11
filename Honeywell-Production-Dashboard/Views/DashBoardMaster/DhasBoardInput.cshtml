@@ -1,13 +1,22 @@
 ﻿@model CustomerMasterModel
+@using System.Text.Json
 
 @{
     ViewBag.Title = "Dashboard";
 }
 
 <h2>Dashboard</h2>
+<!-- Lab LOS Chart -->
+<canvas id="labLosChart" width="800" height="400"></canvas>
 
-<!-- Bar Chart -->
-<canvas id="lineChart" width="800" height="400"></canvas>
+<!-- Line Utilization Chart -->
+<canvas id="lineUtilChart" width="800" height="400" style="margin-top: 50px;"></canvas>
+
+<!-- Yield Chart -->
+<canvas id="yieldChart" width="800" height="400" style="margin-top: 50px;"></canvas>
+
+<!-- Stage Output Chart -->
+<canvas id="lineChart1" width="800" height="400" style="margin-top: 50px;"></canvas>
 
 <!-- Pie Chart -->
 <canvas id="piechart" width="800" height="400" style="margin-top: 50px;"></canvas>
@@ -20,55 +29,319 @@
 
 <script>
     $(document).ready(function () {
-        var fgname = '@Model.FGName';
-        var type = '@Model.Type';
+        var fgname = @Html.Raw(JsonSerializer.Serialize(Model.FGName));
+        var type = @Html.Raw(JsonSerializer.Serialize(Model.Type));
 
-        // ------- Bar Chart -------
+
+        // ------------Bar chart for lab_ls
+
+       function generateColor() {
+            return '#' + Math.floor(Math.random() * 16777215).toString(16).padStart(6, '0');
+       }
+
         $.ajax({
-            url: '/DashBoardMaster/GetChartData',
+            url: '/DashBoardMaster/GetlablosData',
             type: 'GET',
             data: { Fgname: fgname, Type: type },
             success: function (data) {
-                const labels = [...new Set(data.map(item => item.hourIntervel))];
-                const testTypes = [...new Set(data.map(item => item.testType))];
+                console.log("Lab LOS Data:", data);
 
-                const generateColor = () => '#' + Math.floor(Math.random() * 16777215).toString(16).padStart(6, '0');
+                if (!data || data.length === 0) {
+                    console.warn("No data received for Lab LOS Chart.");
+                    return;
+                }
 
-                const datasets = testTypes.map(testType => {
-                    const dataPoints = labels.map(label => {
-                        const match = data.find(x => x.testType === testType && x.hourIntervel === label);
-                        return match ? match.logCount : 0;
-                    });
+                // Extract hour intervals and labor loss values
+                const labels = data.map(item => item.hourIntervel);
+                const labLossValues = data.map(item => item.labr_loss);
+                const backgroundColors = labels.map(() => generateColor());
 
-                    return {
-                        label: testType,
-                        data: dataPoints,
-                        backgroundColor: labels.map(() => generateColor()),
-                        borderWidth: 1
-                    };
-                });
+                const ctx = document.getElementById('labLosChart').getContext('2d');
 
-                const ctx = document.getElementById('lineChart').getContext('2d');
-                new Chart(ctx, {
+                // Destroy old chart if exists
+                if (window.labLosChartInstance) {
+                    window.labLosChartInstance.destroy();
+                }
+
+                window.labLosChartInstance = new Chart(ctx, {
                     type: 'bar',
                     data: {
                         labels: labels,
-                        datasets: datasets
+                        datasets: [{
+                            label: 'Labor Loss (%)',
+                            data: labLossValues,
+                            backgroundColor: backgroundColors,
+                            borderWidth: 1
+                        }]
                     },
                     options: {
                         responsive: true,
                         plugins: {
                             title: {
                                 display: true,
-                                text: 'Bar Chart: Log Count by Hour Interval and Test Type'
+                                text: 'Lab LOS by Hour Interval'
                             },
                             legend: {
-                                position: 'top'
+                                display: false
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function (context) {
+                                        return `${context.label}: ${context.raw.toFixed(2)}%`;
+                                    }
+                                }
                             }
                         },
                         scales: {
-                            x: { stacked: false },
-                            y: { beginAtZero: true }
+                            x: {
+                                title: {
+                                    display: true,
+                                    text: 'Hour Interval'
+                                }
+                            },
+                            y: {
+                                beginAtZero: false,
+                                title: {
+                                    display: true,
+                                    text: 'Labor Loss (%)'
+                                }
+                            }
+                        }
+                    }
+                });
+            },
+            error: function (err) {
+                console.error("Error loading Lab LOS chart data", err);
+            }
+        });
+    
+
+        // ------------Bar chart for Line utilization
+        $.ajax({
+            url: '/DashBoardMaster/GetlineutilData',
+            type: 'GET',
+            data: { Fgname: fgname, Type: type },
+            success: function (data) {
+                console.log("Line Utilization Data:", data);
+
+                if (!data || data.length === 0) {
+                    console.warn("No data received for Line Utilization Chart.");
+                    return;
+                }
+
+                const labels = data.map(item => item.hourIntervel);
+                const producedQty = data.map(item => item.line_util);
+                const backgroundColors = labels.map(() => generateColor());
+
+                const ctx = document.getElementById('lineUtilChart').getContext('2d');
+
+                if (window.lineUtilChartInstance) {
+                    window.lineUtilChartInstance.destroy();
+                }
+
+                window.lineUtilChartInstance = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Line Utilization',
+                            data: producedQty,
+                            backgroundColor: backgroundColors,
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            title: {
+                                display: true,
+                                text: 'Line Utilization by Hour Interval'
+                            },
+                            legend: {
+                                display: false
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function (context) {
+                                        return `${context.label}: ${context.raw.toFixed(2)}%`;
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            x: {
+                                title: {
+                                    display: true,
+                                    text: 'Hour Interval'
+                                }
+                            },
+                            y: {
+                                beginAtZero: true,
+                                title: {
+                                    display: true,
+                                    text: 'Line Utilization'
+                                }
+                            }
+                        }
+                    }
+                });
+            },
+            error: function (err) {
+                console.error("Error loading Line Utilization chart data", err);
+            }
+        });
+        // ------------Bar chart for Yield calculation
+        $.ajax({
+            url: '/DashBoardMaster/GetyieldData',
+            type: 'GET',
+            data: { Fgname: fgname, Type: type },
+            success: function (data) {
+                console.log("Yield:", data);
+                if (!data || data.length === 0) {
+                    console.warn("No data returned for Yield Chart.");
+                    return;
+                }
+
+                // Filter for valid yield data
+                const filtered = data.filter(d => d.yield != null && d.stage != null);
+
+                if (filtered.length === 0) {
+                    console.warn("No valid yield entries with stage.");
+                    return;
+                }
+
+                // Prepare chart data
+                const labels = filtered.map(item => item.stage);
+                const yieldValues = filtered.map(item => item.yield);
+                const backgroundColors = labels.map(() => generateColor());
+
+                const ctx = document.getElementById('yieldChart').getContext('2d');
+
+                if (window.yieldChartInstance) {
+                    window.yieldChartInstance.destroy();
+                }
+
+                // Create a new chart
+                window.yieldChartInstance = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Yield (%)',
+                            data: yieldValues,
+                            backgroundColor: backgroundColors,
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            title: {
+                                display: true,
+                                text: 'Yield by Stage'
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function (context) {
+                                        return `${context.label}: ${context.raw.toFixed(2)}%`;
+                                    }
+                                }
+                            },
+                            legend: {
+                                display: false
+                            }
+                        },
+                        scales: {
+                            x: {
+                                title: { display: true, text: 'Stage' }
+                            },
+                            y: {
+                                beginAtZero: true,
+                                title: { display: true, text: 'Yield (%)' }
+                            }
+                        }
+                    }
+                });
+            },
+            error: function (err) {
+                console.error("Error loading Yield chart data", err);
+            }
+        });
+
+
+
+
+        // ------- Bar Chart for the stage output-------
+        $.ajax({
+            url: '/DashBoardMaster/GetChartData',
+            type: 'GET',
+            data: { Fgname: fgname, Type: type },
+            success: function (data) {
+                console.log("chartdata:", data);
+                if (!data || data.length === 0) {
+                    console.warn("No data returned for the chart.");
+                    return;
+                }
+
+                // Extract unique hour intervals
+                const labels = data.map(item => item.hourIntervel || "N/A");
+
+                // Extract target and logCounts for each interval
+                const targets = data.map(item => item.target || 0);
+                const logCounts = data.map(item => item.logCount || 0);
+
+                const ctx = document.getElementById('lineChart1').getContext('2d');
+
+                // Destroy previous chart if it exists
+                if (window.lineChartInstance) {
+                    window.lineChartInstance.destroy();
+                }
+
+                // Create grouped bar chart
+                window.lineChartInstance = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [
+                            {
+                                label: 'Plan',
+                                data: targets,
+                               // backgroundColor: '#f28e2b' 
+                                backgroundColor: generateColor()
+                            },
+                            {
+                                label: 'Actual',
+                                data: logCounts,
+                               // backgroundColor: '#4e79a7' 
+                                backgroundColor: generateColor() 
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            title: {
+                                display: true,
+                                text: 'Bar Chart: Plan vs Actual by Hour Interval'
+                            },
+                            legend: {
+                                display: true
+                            }
+                        },
+                        scales: {
+                            x: {
+                                title: {
+                                    display: true,
+                                    text: 'Hour Interval'
+                                }
+                            },
+                            y: {
+                                beginAtZero: true,
+                                title: {
+                                    display: true,
+                                    text: 'Count'
+                                }
+                            }
                         }
                     }
                 });
@@ -77,6 +350,9 @@
                 console.error("Error loading bar chart data", err);
             }
         });
+
+
+
 
         // ------- Pie Chart -------
         // Load OEE pie chart
@@ -131,4 +407,7 @@
             }
         });
     });
-</script>
+</script> 
+
+
+

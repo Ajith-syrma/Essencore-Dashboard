@@ -11,8 +11,11 @@ namespace Honeywell_Production_Dashboard.Models
         List<Dashboard_HourlyOP> getoee(Dashboard_HourlyOP dashboard_HourlyOP);
 
         List<Dashboard_HourlyOP> getHourlyOP(Dashboard_HourlyOP dashboard_HourlyOP);
+        List<Dashboard_HourlyOP> getHourlyyield(Dashboard_HourlyOP dashboard_yield_OP);
+        List<Lineutilization> getlineutildata(Lineutilization dashboard_lineutildata_OP);
+        List<labrlosspercentage> getlablosData(labrlosspercentage dashboard_lablossper_OP);
 
-        
+
 
         loginmodel logindetails(loginmodel loginmodel);
 

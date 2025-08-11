@@ -52,6 +52,16 @@
                             </select>
                         </div>
                         <div class="col-md-3">
+                            <label class="form-label fw-semibold">shift_val</label>
+                            <select asp-for="shift_val" class="form-select">
+                                <option value="0">-- Select shift --</option>
+                                <option>SHIFT-A</option>
+                                <option>SHIFT-B</option>
+                                <option>SHIFT-C</option>
+
+                            </select>
+                        </div>
+                        <div class="col-md-3">
                             <label asp-for="Manpower" class="form-label fw-semibold">Manpower</label>
                             <input asp-for="Manpower" class="form-control" placeholder="Enter Manpower" />
                             <span asp-validation-for="Manpower" class="text-danger"></span>
