@@ -94,24 +94,25 @@ namespace Honeywell_Production_Dashboard.Models
             string fg = dashboard_lablossper_OP.FGName;
             string type = dashboard_lablossper_OP.TestType;
             var manpower = dataManagement.getmanpowerdata(fg, type);
-            manpower = 2;
+            //manpower = 1;
 
             foreach (var value in resultlablosdata)
             {
 
-                var actualworkdhrs1 = ((decimal)value.Actual_work_hrs - 60);
-                var actualworkdhrs = actualworkdhrs1 / 60;
+                var actualworkdhrs1 = ((decimal)value.Actual_work_hrs); //calculate in minutes
+                
+                var actualworkdhrs = (actualworkdhrs1 / 60)/60;
                 var Produced_qty = value.Produced_qty;
                 var presenthrs = manpower* (actualworkdhrs) ;
-                var gd_hrs = 1.347 * (Produced_qty);
+                var gd_hrs = 1.347 * (Produced_qty); 
                 var val1 = (decimal)presenthrs - (decimal)gd_hrs;
                 //var lineutilization = (Produced_qty/planned_qty)*100;
 
                 decimal lab_los = 0;
                 if (actualworkdhrs > 0 && Produced_qty > 0)
                 {
-                    lab_los = ((decimal)(val1) / (decimal)gd_hrs) * 100;
-                    lab_los = lab_los+(decimal)(100);
+                    lab_los = Math.Abs(((decimal)(val1) / (decimal)gd_hrs) * 100);
+
                 }
 
                 value.labr_loss = lab_los; //  Store the result directly in the object
@@ -134,7 +135,7 @@ namespace Honeywell_Production_Dashboard.Models
             int downtime_seconds = dataManagement.getdowntime(dashboard_HourlyOP);
             var date = DateTime.Now.TimeOfDay;
 
-            int downtime = downtime_seconds - 2400;
+            int downtime = downtime_seconds ;
 
             //int runtimeValue = 26400 - downtime_seconds;
 
@@ -179,11 +180,11 @@ namespace Honeywell_Production_Dashboard.Models
             int minutesSinceShiftStart = (int)difference.TotalMinutes;
             // Get planned production time for current hour
 
-            // int planned_production_time = minutesSinceShiftStart*60;
-            int planned_production_time = 26400 ;
+            int planned_production_time = minutesSinceShiftStart*60;
+           // int planned_production_time = 26400 ;
 
             // Calculate runtime
-            int runtimeValue = 26400 - downtime_seconds;
+            int runtimeValue = planned_production_time - downtime_seconds;
 
            // Output
 
@@ -222,6 +223,7 @@ namespace Honeywell_Production_Dashboard.Models
             oeeResults.Add(new Dashboard_HourlyOP { Label = "Availability", Value = Math.Round(availability, 2) });
             oeeResults.Add(new Dashboard_HourlyOP { Label = "Performance", Value = Math.Round(performance, 2) });
             oeeResults.Add(new Dashboard_HourlyOP { Label = "Quality", Value = Math.Round(quality, 2) });
+            dataManagement.oee_data_upload(dashboard_HourlyOP);
 
             return oeeResults;
         }
