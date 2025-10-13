@@ -57,13 +57,26 @@
         --text-light: #333;
     }
 
-    body {
+/*     body {
         font-family: 'Roboto', sans-serif;
         margin: 0;
         padding: 20px;
         background-color: var(--bg-light);
         color: var(--text-light);
         transition: background-color 0.3s, color 0.3s;
+    }
+ */
+    body {
+        font-family: 'Roboto', sans-serif;
+        margin: 0;
+        padding: 0; /* Remove global padding */
+        background-color: var(--bg-light);
+        color: var(--text-light);
+        transition: background-color 0.3s, color 0.3s;
+    }
+
+    .dashboard-container {
+        padding: 20px; /* Apply padding only where needed */
     }
 
     h2 {
@@ -86,21 +99,26 @@
         gap: 1rem;
         justify-content: space-between;
         flex-wrap: wrap;
-    }
+    } 
+
+
 
     .chart-card {
         flex: 1 1 calc(33.333% - 1rem);
-        min-width: 250px;
-        background: var(--card-light);
+        min-width: 480px;
+    @*background: var(--card-light);*@ background-color: #003b46;
         padding: 1rem;
         box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
         border-radius: 8px;
         transition: transform 0.2s ease;
     }
 
-        .chart-card:hover {
-            transform: scale(1.01);
-        }
+
+
+
+    .chart-card:hover {
+        transform: scale(1.01);
+    }
 
     body.dark-mode .chart-card {
         background-color: var(--card-dark);
@@ -144,7 +162,7 @@
 </style>
 
 <!-- Header Section -->
-<div class="header-container">
+@* <div class="header-container">
     <div class="header-left">
         <img src="~/images/syrmasgs.png" alt="Logo" class="header-logo" />
     </div>
@@ -155,7 +173,7 @@
         <span id="liveClock"></span>
     </div>
 
-</div>
+</div> *@
 
 <!-- Dashboard Section -->
 <div class="dashboard-container">
@@ -190,7 +208,7 @@
 
 <!-- Footer -->
 <footer>
-    &copy; @DateTime.Now.Year - Manufacturing Analytics Dashboard
+    &copy; @DateTime.Now.Year - Manufacturing Analytics Dashboard by Syrma SGS-Tester Development
 </footer>
 
 <!-- jQuery & Chart.js -->
@@ -256,6 +274,21 @@
 </script>
 
 <script>
+
+    const colorSet = {
+        plan: '#3498db',           // Blue for Plan
+        actual: '#2ecc71',         // Green for Actual
+        yield: '#f39c12',          // Orange for Yield
+        pie: ['#FF6B6B', '#4ECDC4', '#1A535C']
+
+
+    };
+
+    const fixedBarColors = [
+        '#3498db', '#2ecc71', '#f1c40f',
+        '#9b59b6', '#1abc9c', '#e67e22', '#e74c3c'
+    ];
+
     const fgname = @Html.Raw(JsonSerializer.Serialize(Model.FGName));
     const type = @Html.Raw(JsonSerializer.Serialize(Model.Type));
 
@@ -288,11 +321,7 @@
                 type: 'doughnut',
                 data: {
 
-                    labels: ['Loss', 'Remaining'],
-
-                   
-                    labels,
-
+                    labels: ['Labour Loss', 'Labour Utilization'],
                     datasets: [{
                         data: [value, remaining],
                         backgroundColor: ['#e74a3b', '#e0e0e0'],
@@ -308,7 +337,7 @@
                     responsive: true,
 
                     plugins: {
-                        title: { display: true, text: 'Labor Loss' },
+                        title: { display: true, text: 'Labour Loss', font: { weight: 'bold', size: 16 } },
                         legend: { position: 'bottom' },
                         tooltip: {
                             callbacks: {
@@ -335,7 +364,7 @@
             window.lineUtilChartInstance = new Chart(ctx, {
                 type: 'doughnut',
                 data: {
-                    labels: ['Utilized', 'Remaining'],
+                    labels: ['Utilized', 'Un-Utilized'],
                     datasets: [{
                         data: [value, remaining],
                         backgroundColor: ['#1cc88a', '#e0e0e0'],
@@ -351,7 +380,7 @@
                     responsive: true,
 
                     plugins: {
-                        title: { display: true, text: 'Line Utilization' },
+                        title: { display: true, text: 'Line Utilization', font: { weight: 'bold', size: 16 } },
                         legend: { position: 'bottom' },
                         tooltip: {
                             callbacks: {
@@ -367,20 +396,39 @@
             });
         });
 
+
         // === 3. YIELD CHART ===
         $.get('/DashBoardMaster/GetyieldData', { Fgname: fgname, Type: type }, function (data) {
             $('#spinnerYield').hide();
-            const filtered = data.filter(d => d.yield != null && d.stage != null);
-            if (filtered.length === 0) return;
-            const labels = filtered.map(d => d.stage);
-            const values = filtered.map(d => d.yield);
-            const bg = labels.map(() => generateColor());
+            if (!data || data.length === 0) return;
+
+            // Define the fixed stage labels in correct order
+            const defaultStages = ["FCT-1", "FCT-2", "FCT-3", "RF-1", "RF-2", "RTC", "VOLT"];
+
+            // Create a mapping from stage name to yield value
+            const yieldMap = {};
+            data.forEach(d => {
+                const stageName = d.stage?.trim(); // Clean up whitespace
+                if (stageName && d.yield != null) {
+                    yieldMap[stageName] = parseFloat(d.yield);
+                }
+            });
+
+            // Build values in the correct stage order
+            const labels = defaultStages;
+            const values = defaultStages.map(stage => yieldMap[stage] ?? 0);  // Use 0 if not found
+           // const bg = labels.map((_, i) => fixedBarColors[i % fixedBarColors.length]);
+           const bg = values.map(value => value >= 90 ? '#2ecc71' : '#e74c3c'); // green or red
+
+
+
             const ctx = document.getElementById('yieldChart').getContext('2d');
             if (window.yieldChartInstance) window.yieldChartInstance.destroy();
+
             window.yieldChartInstance = new Chart(ctx, {
                 type: 'bar',
                 data: {
-                    labels,
+                    labels: labels,
                     datasets: [{
                         label: 'Yield (%)',
                         data: values,
@@ -388,60 +436,84 @@
                     }]
                 },
                 options: {
-
-
                     responsive: true,
-
                     plugins: {
                         legend: {
-                            display: false  // hides legend completely
+                            display: false
                         },
-                        title: { display: true, text: 'Yield by Stage' },
+                        title: {
+                            display: true,
+                            text: 'Yield by Stage',
+                            font: {
+                                weight: 'bold', size: 16
+                            }
+                        },
                         tooltip: {
                             callbacks: {
                                 label: context => `${context.label}: ${context.raw.toFixed(2)}%`
                             }
                         },
                         datalabels: {
-                            anchor: 'end',       // Anchored at end of bar
-                            align: 'start',      // Aligned inside the bar at the start
-                            offset: -15,         // Move a bit inward
-                            color: '#000',       // White text for dark bars
+                            anchor: 'end',
+                            align: 'start',
+                            offset: -15,
+                            color: '#000',
                             font: { weight: 'bold' },
                             formatter: value => value.toFixed(0) + '%'
                         }
                     },
                     scales: {
                         x: { title: { display: true, text: 'Stage' } },
-                        y: { beginAtZero: true, title: { display: true, text: 'Yield (%)' } }
+                        y: {
+                            beginAtZero: true,
+                            title: { display: true, text: 'Yield (%)' }
+                        }
                     },
-                    responsive: true,
                     maintainAspectRatio: false
                 },
                 plugins: [ChartDataLabels]
             });
         });
 
+
+
         // === 4. STAGE OUTPUT ===
         $.get('/DashBoardMaster/GetChartData', { Fgname: fgname, Type: type }, function (data) {
             $('#spinnerStage').hide();
             if (!data) return;
 
-            // Helper to extract start hour from interval (e.g. "08-09" -> 8)
-            function getStartHour(intervalStr) {
-                const [start, end] = intervalStr.split('-');
-                return parseInt(start);
-            }
+            const totalIntervals = 8;
+            const labels = Array.from({ length: totalIntervals }, (_, i) => (i + 1).toString());
 
-            // Sort data chronologically based on start hour
-            const sortedData = data.slice().sort((a, b) => {
-                return getStartHour(a.hourIntervel) - getStartHour(b.hourIntervel);
+            // Create a map from the incoming data (assumes each item has label or hour info)
+            const dataMap = {};
+            data.forEach((item, idx) => {
+                // If hourIntervel is not used, fallback to index
+                const label = (idx + 1).toString();  // Use actual logic if label is present in data
+                dataMap[label] = item;
             });
 
-            // Extract labels and values
-            const labels = sortedData.map(d => d.hourIntervel);
-            const targets = sortedData.map(d => d.target || 0);
-            const actuals = sortedData.map(d => d.logCount || 0);
+            // Build targets and actuals using fixed labels
+            const targets = [];
+            const actuals = [];
+
+            labels.forEach(label => {
+                const item = dataMap[label];
+
+                // Apply default logic
+                let defaultTarget;
+                if (label === "3") {
+                    defaultTarget = 10;
+                } else if (label === "5") {
+                    defaultTarget = 6;
+                } else {
+                    defaultTarget = 12;
+                }
+
+                // Use target from data if exists, otherwise fallback to default
+                targets.push(item?.target ?? defaultTarget);
+                actuals.push(item?.logCount ?? 0);
+            });
 
             // Draw chart
             const ctx = document.getElementById('lineChart1').getContext('2d');
@@ -450,29 +522,32 @@
             window.lineChartInstance = new Chart(ctx, {
                 type: 'bar',
                 data: {
-                    labels: labels, // Use actual hour intervals like "08-09"
+                    labels: labels,
                     datasets: [
                         {
                             label: 'Plan',
                             data: targets,
-                            backgroundColor: generateColor()
+                            //backgroundColor: generateColor()
+                            backgroundColor: colorSet.plan  // for Plan
+
                         },
                         {
                             label: 'Actual',
                             data: actuals,
-                            backgroundColor: generateColor()
+                            //backgroundColor: generateColor()
+                            backgroundColor: colorSet.actual // for Actual
                         }
                     ]
                 },
                 options: {
-
-
                     responsive: true,
-
                     plugins: {
                         title: {
                             display: true,
-                            text: 'Plan vs Actual by Hour Interval'
+                            text: 'Hourly output Plan vs Actual ',
+                            font: {
+                                weight: 'bold', size: 16
+                            }
                         },
                         datalabels: {
                             anchor: 'end',
@@ -487,7 +562,7 @@
                         x: {
                             title: {
                                 display: true,
-                                text: 'Hour Interval'
+                                text: 'Intervals'
                             }
                         },
                         y: {
@@ -498,12 +573,15 @@
                             }
                         }
                     },
-                    responsive: true,
                     maintainAspectRatio: false
                 },
                 plugins: [ChartDataLabels]
             });
         });
+
+
+
+
 
 
 
@@ -514,7 +592,9 @@
             if (!data || data.length === 0) return;
             const labels = data.map(d => d.label);
             const values = data.map(d => d.value);
-            const bg = labels.map(() => generateColor());
+            //const bg = labels.map(() => generateColor());
+            const bg = colorSet.pie;
+
             const oeeValue = (values[0] / 100) * (values[1] / 100) * (values[2] / 100);
             const oeePercentage = (oeeValue * 100).toFixed(0);
             const ctx = document.getElementById('piechart').getContext('2d');
@@ -534,7 +614,7 @@
                 options: {
                     cutout: '50%',
                     plugins: {
-                        title: { display: true, text: 'OEE Breakdown' },
+                        title: { display: true, text: 'OEE Breakdown', font: { weight: 'bold', size: 16 } },
                         legend: { position: 'bottom' },
                         tooltip: {
                             callbacks: {

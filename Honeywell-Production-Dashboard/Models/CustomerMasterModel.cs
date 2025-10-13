@@ -8,6 +8,7 @@ namespace Honeywell_Production_Dashboard.Models
         public string FGName { get; set; }
         public string FGNameText {  get; set; }
         public int Manpower { get; set; }
+        //public int TotalManpower {  get; set; }  
         public string Type {  get; set; }
         public decimal downtime { get; set; }
         public string shift_val { get; set; }
