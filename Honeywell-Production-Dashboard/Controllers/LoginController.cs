@@ -33,6 +33,10 @@ namespace Honeywell_Production_Dashboard.Controllers
                         {
                             return RedirectToAction("ProdcutionMaster", "DashBoardMaster");
                         }
+                        else if (login.usertype == "User")
+                        {
+                            return RedirectToAction("DhasBoardInputs", "DashBoardMaster");
+                        }
                         else
                         {
                             return RedirectToAction("DhasBoardInput", "DashBoardMaster");

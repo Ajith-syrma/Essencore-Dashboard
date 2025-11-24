@@ -1,9 +1,9 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
-VisualStudioVersion = 17.12.35707.178 d17.12
+VisualStudioVersion = 17.12.35707.178
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Honeywell-Production-Dashboard", "Honeywell-Production-Dashboard\Honeywell-Production-Dashboard.csproj", "{8B4A7E9C-5F39-4D78-8365-1EFC4C4F9DD7}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Essencore-Production-Dashboard", "Honeywell-Production-Dashboard\Essencore-Production-Dashboard.csproj", "{8B4A7E9C-5F39-4D78-8365-1EFC4C4F9DD7}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -42,6 +42,66 @@ namespace Honeywell_Production_Dashboard.Models
             return resulthourly;
         }
 
+        public List<Dashboard_HourlyOP> gethourlyone(Dashboard_HourlyOP dashboard_HourlyOP)
+        {
+            var resulthourly = dataManagement.gethourlyone(dashboard_HourlyOP);
+            return resulthourly;
+        }
+
+        public List<Dashboard_HourlyOP> getyieldDataOne(Dashboard_HourlyOP dashboard_HourlyOP)
+        {
+            var resulthourly = dataManagement.getyieldDataOne(dashboard_HourlyOP);
+            return resulthourly;
+        }
+
+        public List<Dashboard_HourlyOP> gethourlytwo(Dashboard_HourlyOP dashboard_HourlyOP)
+        {
+            var resulthourly = dataManagement.gethourlytwo(dashboard_HourlyOP);
+            return resulthourly;
+        }
+
+        public List<Dashboard_HourlyOP> getyieldDatatwo(Dashboard_HourlyOP dashboard_HourlyOP)
+        {
+            var resulthourly = dataManagement.getyieldDatatwo(dashboard_HourlyOP);
+            return resulthourly;
+        }
+
+        public List<Dashboard_HourlyOP> gethourlythree(Dashboard_HourlyOP dashboard_HourlyOP)
+        {
+            var resulthourly = dataManagement.gethourlythree(dashboard_HourlyOP);
+            return resulthourly;
+        }
+
+        public List<Dashboard_HourlyOP> getyieldDatathree(Dashboard_HourlyOP dashboard_HourlyOP)
+        {
+            var resulthourly = dataManagement.getyieldDatathree(dashboard_HourlyOP);
+            return resulthourly;
+        }
+
+        public List<Dashboard_HourlyOP> gethourlyfour(Dashboard_HourlyOP dashboard_HourlyOP)
+        {
+            var resulthourly = dataManagement.gethourlyfour(dashboard_HourlyOP);
+            return resulthourly;
+        }
+
+        public List<Dashboard_HourlyOP> getyieldDatafour(Dashboard_HourlyOP dashboard_HourlyOP)
+        {
+            var resulthourly = dataManagement.getyieldDatafour(dashboard_HourlyOP);
+            return resulthourly;
+        }
+
+        public List<Dashboard_HourlyOP> gethourlyfive(Dashboard_HourlyOP dashboard_HourlyOP)
+        {
+            var resulthourly = dataManagement.gethourlyfive(dashboard_HourlyOP);
+            return resulthourly;
+        }
+
+        public List<Dashboard_HourlyOP> getyieldDatafive(Dashboard_HourlyOP dashboard_HourlyOP)
+        {
+            var resulthourly = dataManagement.getyieldDatafive(dashboard_HourlyOP);
+            return resulthourly;
+        }
+
         public List<Dashboard_HourlyOP> getHourlyyield(Dashboard_HourlyOP dashboard_HourlyOP)
         {
             var resulthourly = dataManagement.getHourlyyield(dashboard_HourlyOP);
@@ -68,6 +128,7 @@ namespace Honeywell_Production_Dashboard.Models
         public List<Lineutilization> getlineutildata(Lineutilization dashboard_lineutildata_OP)
         {
             var resultutildata = dataManagement.getlineutildata(dashboard_lineutildata_OP);
+            var objH_DashboardTrans = new H_Dashboard_Transaction();
 
             foreach (var value in resultutildata)
             {
@@ -82,6 +143,9 @@ namespace Honeywell_Production_Dashboard.Models
                 }
 
                 value.line_util = lin_util; //  Store the result directly in the object
+                objH_DashboardTrans.FGName = value.FGName;
+                //objH_DashboardTrans
+
             }
 
             return resultutildata;
