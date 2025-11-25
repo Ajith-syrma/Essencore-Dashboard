@@ -169,6 +169,13 @@
                         <div class="chart-card">
                             <div class="spinner" id="spinnerPieone"></div>
                             <canvas id="yieldpiechartOne"></canvas>
+
+
+
+@*                             <div id="failBreakdownContainer" style="margin-top:20px; display:none;">
+                                <h4 style="text-align:center;">Fail Breakdown</h4>
+                                <canvas id="failBreakdownChart" height="220"></canvas>
+                            </div> *@
                         </div>
                    
                     <div class="chart-card">
@@ -256,6 +263,32 @@
        
     </div>
 </div>
+<div id="failModal" class="modal" style="display:none; justify-content:center; align-items:center;">
+    <div class="modal-content" style="width:500px; background:white; padding:20px; border-radius:10px; position:relative;">
+
+        <!-- Close button -->
+        <span id="closeFailModal"
+              style="position:absolute; top:10px; right:15px; cursor:pointer; font-size:22px; font-weight:bold;">
+            &times;
+        </span>
+
+        <h3 style="text-align:center; margin-bottom:20px;">Fail Breakdown</h3>
+        <canvas id="failBreakdownChart" height="230"></canvas>
+    </div>
+</div>
+
+<style>
+    /* Basic Modal Background */
+    .modal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.6);
+        z-index: 9999;
+    }
+</style>
 
 <script>
     debugger;
@@ -309,28 +342,97 @@
         ).toString(16).slice(1);
     }
 
-      $.get('/DashBoardMaster/GetyieldDataOne', { Fgname: fgname, Type: type }, function (datay) {
+    //   $.get('/DashBoardMaster/GetyieldDataOne', { Fgname: fgname, Type: type }, function (datay) {
+    //     $('#spinnerPieone').hide();
+    //     if (!datay || datay.length === 0) return;
+
+    //     debugger;
+    //     console.log(datay);
+
+    //     // Extract and prepare data
+    //     const label = datay.map(d => d.stage?.trim());
+    //     const passCount = datay.reduce((sum, d) => sum + parseFloat(d.passcountyield ?? 0), 0);
+    //     const failCount = datay.reduce((sum, d) => sum + parseFloat(d.failcountyield ?? 0), 0);
+    //     const totalCount = datay.map(d => parseFloat(d.yield ?? 0));
+
+    //     const labels = ['Pass', 'Fail'];
+    //     const values = [passCount, failCount];
+    //     const bgColors = ['#4CAF50', '#F44336']; // green for pass, red for fail
+
+    //     // Chart initialization
+    //     const ctx = document.getElementById('yieldpiechartOne').getContext('2d');
+    //     if (window.labLosChartInstanceone) window.labLosChartInstanceone.destroy();
+
+    //     // Custom plugin to show total count at the center
+    //     const totalCenterText = {
+    //         id: 'totalCenterText',
+    //         afterDraw(chart) {
+    //             const { ctx, chartArea: { width, height } } = chart;
+    //             ctx.save();
+    //             ctx.font = 'bold 10px Arial';
+    //             ctx.fillStyle = '#000';
+    //             ctx.textAlign = 'center';
+    //             ctx.textBaseline = 'middle';
+    //             ctx.fillText(`Total: ${totalCount}`, width / 2, height / 2);
+    //             ctx.restore();
+    //         }
+    //     };
+
+    //     window.labLosChartInstanceone = new Chart(ctx, {
+    //         type: 'doughnut',
+    //         data: {
+    //             labels: labels,
+    //             datasets: [{
+    //                 data: values,
+    //                 backgroundColor: bgColors,
+    //                 borderWidth: 1,
+    //                 borderRadius: 15,
+    //                 offset: 10
+    //             }]
+    //         },
+    //         options: {
+    //             cutout: '60%',
+    //             responsive: true,
+    //             plugins: {
+    //                 title: {
+    //                     display: true,
+    //                     text: label,
+    //                     font: { weight: 'bold', size: 16 }
+    //                 },
+    //                 legend: {
+    //                     position: 'bottom'
+    //                 },
+    //                 tooltip: {
+    //                     callbacks: {
+    //                         label: context => `${context.label}: ${context.raw}`
+    //                     }
+    //                 }
+    //             },
+    //             maintainAspectRatio: false
+    //         },
+    //         plugins: [totalCenterText]
+    //     });
+    // });
+
+
+    $.get('/DashBoardMaster/GetyieldDataOne', { Fgname: fgname, Type: type }, function (datay) {
         $('#spinnerPieone').hide();
         if (!datay || datay.length === 0) return;
 
-        debugger;
         console.log(datay);
 
-        // Extract and prepare data
         const label = datay.map(d => d.stage?.trim());
         const passCount = datay.reduce((sum, d) => sum + parseFloat(d.passcountyield ?? 0), 0);
         const failCount = datay.reduce((sum, d) => sum + parseFloat(d.failcountyield ?? 0), 0);
-        const totalCount = datay.map(d => parseFloat(d.yield ?? 0));
+        const totalCount = datay.reduce((sum, d) => sum + parseFloat(d.yield ?? 0), 0);
 
         const labels = ['Pass', 'Fail'];
         const values = [passCount, failCount];
-        const bgColors = ['#4CAF50', '#F44336']; // green for pass, red for fail
+        const bgColors = ['#4CAF50', '#F44336'];
 
-        // Chart initialization
         const ctx = document.getElementById('yieldpiechartOne').getContext('2d');
         if (window.labLosChartInstanceone) window.labLosChartInstanceone.destroy();
 
-        // Custom plugin to show total count at the center
         const totalCenterText = {
             id: 'totalCenterText',
             afterDraw(chart) {
@@ -360,15 +462,26 @@
             options: {
                 cutout: '60%',
                 responsive: true,
+
+                // 👇 HANDLE CLICK EVENT HERE
+                onClick: function (evt, activeEls) {
+                    if (!activeEls.length) return;
+
+                    let index = activeEls[0].index;
+                    let clickedLabel = this.data.labels[index];
+
+                    if (clickedLabel === 'Fail') {
+                        getFailBreakdown(fgname, type);
+                    }
+                },
+
                 plugins: {
                     title: {
                         display: true,
                         text: label,
                         font: { weight: 'bold', size: 16 }
                     },
-                    legend: {
-                        position: 'bottom'
-                    },
+                    legend: { position: 'bottom' },
                     tooltip: {
                         callbacks: {
                             label: context => `${context.label}: ${context.raw}`
@@ -380,6 +493,76 @@
             plugins: [totalCenterText]
         });
     });
+
+
+    // -------------------------------------------------------------
+    //      CALL FAIL TYPE BREAKDOWN CONTROLLER
+    // -------------------------------------------------------------
+    function getFailBreakdown(fgname, type) {
+
+        $.get('/DashBoardMaster/GetFailTypes1',
+            { Fgname: fgname, type: type },
+            function (data) {
+
+                console.log("Fail Breakdown: ", data);
+
+                if (!data || data.length === 0) return;
+
+                // Expected: list of fail type objects
+                // Convert to chart format:
+                const labels = data.map(x => x.fail_types);
+                const values = data.map(x => x.fail_type_ct);
+
+                displayFailBreakdownChart(labels, values);
+            }
+        );
+    }
+
+
+    // -------------------------------------------------------------
+    //                 SHOW FAIL TYPE BAR CHART
+    // -------------------------------------------------------------
+    function displayFailBreakdownChart(labels, values) {
+
+        openFailModal();   // 🔥 Show modal
+
+        const ctx2 = document.getElementById('failBreakdownChart').getContext('2d');
+
+        if (window.failBreakdownInstance)
+            window.failBreakdownInstance.destroy();
+
+        window.failBreakdownInstance = new Chart(ctx2, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: "Fail Types",
+                    data: values,
+                    backgroundColor: '#F44336'
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { display: false }
+                }
+            }
+        });
+    }
+
+    function openFailModal() {
+    document.getElementById("failModal").style.display = "flex";
+    }
+
+    function closeFailModal() {
+        document.getElementById("failModal").style.display = "none";
+    }
+
+    document.getElementById("closeFailModal").onclick = closeFailModal;
+
+
+
+
 
 
 
@@ -405,17 +588,17 @@
             data: {
                 labels: labels,
                 datasets: [
-                      {
-                        type: 'line',
-                        label: 'Target',
-                        data: targets,
-                        borderColor: '#f1c40f',
-                        borderWidth: 3,
-                        tension: 0.3,
-                        pointBackgroundColor: '#f39c12',
-                        fill: false,
-                        yAxisID: 'y',
-                    },
+                    //   {
+                    //     type: 'line',
+                    //     label: 'Target',
+                    //     data: targets,
+                    //     borderColor: '#f1c40f',
+                    //     borderWidth: 3,
+                    //     tension: 0.3,
+                    //     pointBackgroundColor: '#f39c12',
+                    //     fill: false,
+                    //     yAxisID: 'y',
+                    // },
                     {
                         type: 'bar',
                         label: 'Actual',
@@ -444,7 +627,8 @@
                     },
                     datalabels: {
                         anchor: 'end',
-                        align: 'top',
+                        align: 'bottom',
+                        clamp: true,
                         color: '#000',
                         font: { weight: 'bold' },
                         formatter: value => value.toFixed(1)
@@ -558,17 +742,17 @@
             data: {
                 labels: labels,
                 datasets: [
-                    {
-                        type: 'line',
-                        label: 'Target',
-                        data: targets,
-                        borderColor: '#f1c40f',
-                        borderWidth: 3,
-                        tension: 0.3,
-                        pointBackgroundColor: '#f39c12',
-                        fill: false,
-                        yAxisID: 'y',
-                    },
+                    // {
+                    //     type: 'line',
+                    //     label: 'Target',
+                    //     data: targets,
+                    //     borderColor: '#f1c40f',
+                    //     borderWidth: 3,
+                    //     tension: 0.3,
+                    //     pointBackgroundColor: '#f39c12',
+                    //     fill: false,
+                    //     yAxisID: 'y',
+                    // },
                       {
                         type: 'bar',
                         label: 'Actual',
@@ -596,7 +780,8 @@
                     },
                     datalabels: {
                         anchor: 'end',
-                        align: 'top',
+                        align: 'bottom',
+                        clamp: true,
                         color: '#000',
                         font: { weight: 'bold' },
                         formatter: value => value.toFixed(1) 
@@ -709,17 +894,17 @@
             data: {
                 labels: labels,
                 datasets: [
-                    {
-                        type: 'line',
-                        label: 'Target',
-                        data: targets,
-                        borderColor: '#f1c40f',
-                        borderWidth: 3,
-                        tension: 0.3,
-                        pointBackgroundColor: '#f39c12',
-                        fill: false,
-                        yAxisID: 'y',
-                    },
+                    // {
+                    //     type: 'line',
+                    //     label: 'Target',
+                    //     data: targets,
+                    //     borderColor: '#f1c40f',
+                    //     borderWidth: 3,
+                    //     tension: 0.3,
+                    //     pointBackgroundColor: '#f39c12',
+                    //     fill: false,
+                    //     yAxisID: 'y',
+                    // },
 
                     {
                         type: 'bar',
@@ -749,7 +934,8 @@
                     },
                     datalabels: {
                         anchor: 'end',
-                        align: 'top',
+                        align: 'bottom',
+                        clamp: true,
                         color: '#000',
                         font: { weight: 'bold' },
                         formatter: value => value.toFixed(1)

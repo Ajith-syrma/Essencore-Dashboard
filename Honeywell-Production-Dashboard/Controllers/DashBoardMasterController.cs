@@ -242,5 +242,17 @@ namespace Honeywell_Production_Dashboard.Controllers
             return Json(OEE); // Return as JSON to frontend
         }
 
+
+        public JsonResult GetFailTypes1(string Fgname, string type)
+        {
+            Dashboard_HourlyOP objoeeDashboardfailty = new Dashboard_HourlyOP();
+            // objDashboard3.FGName = Fgname.ToString();
+            //objDashboard3.TestType = type.ToString();
+            //objoeeDashboardfailty.fail_types = string.Empty;
+            //objoeeDashboardfailty.fail_type_ct = 0;
+            var dashbaordfailtypqt = interface_DashBoard.getfailtype1(objoeeDashboardfailty);
+            return Json(dashbaordfailtypqt);
+        }
+
     }
 }

@@ -9,6 +9,7 @@ namespace Honeywell_Production_Dashboard.Models
         int insertManpower(CustomerMasterModel customermodel);
         List<ProductionDetails> getCustomerMasterModels();
         List<Dashboard_HourlyOP> getoee(Dashboard_HourlyOP dashboard_HourlyOP);
+        List<Dashboard_HourlyOP> getfailtype1(Dashboard_HourlyOP dashboard_HourlyOP);
 
         List<Dashboard_HourlyOP> getHourlyOP(Dashboard_HourlyOP dashboard_HourlyOP);
         List<Dashboard_HourlyOP> getHourlyyield(Dashboard_HourlyOP dashboard_yield_OP);

@@ -1414,6 +1414,65 @@ namespace Honeywell_Production_Dashboard.Models
             }
         }
 
+
+        public List<Dashboard_HourlyOP> getfailtypevalue1(Dashboard_HourlyOP dashboard_HourlyOP)
+        {
+            List<Dashboard_HourlyOP> lstfailtypes = new List<Dashboard_HourlyOP>();
+
+            try
+            {
+                var date = DateTime.Now.Date;
+                string shift = GetShiftLabel(DateTime.Now);
+
+                using (SqlConnection sqlConn = new SqlConnection(A4))
+                {
+                    using (SqlCommand cmd = new SqlCommand("pro_getfailtypes", sqlConn))
+                    {
+                        cmd.CommandType = CommandType.StoredProcedure;
+
+
+
+                        //cmd.Parameters.AddWithValue("@type", "V200");
+                        //cmd.Parameters.AddWithValue("@fg", "ECH3HWI00001");
+                        //cmd.Parameters.AddWithValue("@date", "25-09-2025");
+                        //cmd.Parameters.AddWithValue("@shift", "SHIFT-A");
+
+
+                        //cmd.Parameters.AddWithValue("@type", dashboard_HourlyOP.TestType);
+                        //cmd.Parameters.AddWithValue("@fg", dashboard_HourlyOP.FGName);
+                        //cmd.Parameters.AddWithValue("@date", date.ToString("dd-MM-yyyy"));
+                        cmd.Parameters.AddWithValue("@stagename", "SPD");
+                        cmd.Parameters.AddWithValue("@shiftvalue", shift);
+
+                        SqlDataAdapter da = new SqlDataAdapter(cmd);
+                        DataTable dt = new DataTable();
+                        da.Fill(dt);
+
+                        if (dt.Rows.Count > 0)
+                        {
+                            foreach (DataRow dr in dt.Rows)
+                            {
+                                Dashboard_HourlyOP objfailDashboard = new Dashboard_HourlyOP
+                                {
+                                    fail_types = dr["FAILTYPES"].ToString(),
+                                    fail_type_ct = Convert.ToInt32(dr["FAILCOUNT"].ToString()),
+                                  //  Totalcount = Convert.ToInt32(dr["TOTALCOUNT"])
+                                };
+
+                                lstfailtypes.Add(objfailDashboard);
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                return lstfailtypes; // Return empty list on error
+            }
+
+            return lstfailtypes;
+        }
+
     }
 
 }

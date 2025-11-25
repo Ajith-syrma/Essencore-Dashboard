@@ -25,6 +25,11 @@
         public int hour { get; set; }
 
         public int hourvalue { get; set; }
+
+
+        //fail types 
+        public string fail_types { get; set; }
+        public int fail_type_ct { get; set; }
     }
 
 
@@ -64,6 +69,14 @@
 
         public int hour_count { get; set; }
         public int downtime { get; set; }
+
+
+    }
+
+    public class faildetails
+    {
+
+
 
 
     }

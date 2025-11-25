@@ -293,6 +293,13 @@ namespace Honeywell_Production_Dashboard.Models
         }
 
 
+        public List<Dashboard_HourlyOP> getfailtype1(Dashboard_HourlyOP dashboard_HourlyOP)
+        {
+            var failresult = dataManagement.getfailtypevalue1(dashboard_HourlyOP);
+            return failresult;
+        }
+
+
 
 
 
