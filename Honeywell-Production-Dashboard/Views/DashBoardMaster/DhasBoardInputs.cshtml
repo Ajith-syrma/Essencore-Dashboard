@@ -471,7 +471,7 @@
                     let clickedLabel = this.data.labels[index];
 
                     if (clickedLabel === 'Fail') {
-                        getFailBreakdown(fgname, type);
+                        getFailBreakdown1(fgname, type);
                     }
                 },
 
@@ -498,7 +498,7 @@
     // -------------------------------------------------------------
     //      CALL FAIL TYPE BREAKDOWN CONTROLLER
     // -------------------------------------------------------------
-    function getFailBreakdown(fgname, type) {
+    function getFailBreakdown1(fgname, type) {
 
         $.get('/DashBoardMaster/GetFailTypes1',
             { Fgname: fgname, type: type },
@@ -650,17 +650,88 @@
         });
     });
 
-       $.get('/DashBoardMaster/GetyieldDatatwo', { Fgname: fgname, Type: type }, function (datayn) {
+       // $.get('/DashBoardMaster/GetyieldDatatwo', { Fgname: fgname, Type: type }, function (datayn) {
+       //  $('#spinnerPietwo').hide();
+       //  if (!datayn || datayn.length === 0) return;
+
+       //  debugger;
+       //  console.log(datayn);
+
+       //  // Extract and prepare data
+       //  const passCount = datayn.reduce((sum, d) => sum + parseFloat(d.passcountyield ?? 0), 0);
+       //  const failCount = datayn.reduce((sum, d) => sum + parseFloat(d.failcountyield ?? 0), 0);
+       //  const totalCount = datayn.map(d => parseFloat(d.yield ?? 0));
+
+       //  const labels = ['Pass', 'Fail'];
+       //  const values = [passCount, failCount];
+       //  const bgColors = ['#4CAF50', '#F44336']; // green for pass, red for fail
+
+       //  // Chart initialization
+       //  const ctx = document.getElementById('yieldpiecharttwo').getContext('2d');
+       //  if (window.labLosChartInstancetwo) window.labLosChartInstancetwo.destroy();
+
+       //  // Custom plugin to show total count at the center
+       //  const totalCenterText = {
+       //      id: 'totalCenterText',
+       //      afterDraw(chart) {
+       //          const { ctx, chartArea: { width, height } } = chart;
+       //          ctx.save();
+       //          ctx.font = 'bold 10px Arial';
+       //          ctx.fillStyle = '#000';
+       //          ctx.textAlign = 'center';
+       //          ctx.textBaseline = 'middle';
+       //          ctx.fillText(`Total: ${totalCount}`, width / 2, height / 2);
+       //          ctx.restore();
+       //      }
+       //  };
+
+       //  window.labLosChartInstancetwo = new Chart(ctx, {
+       //      type: 'doughnut',
+       //      data: {
+       //          labels: labels,
+       //          datasets: [{
+       //              data: values,
+       //              backgroundColor: bgColors,
+       //              borderWidth: 1,
+       //              borderRadius: 15,
+       //              offset: 10
+       //          }]
+       //      },
+       //      options: {
+       //          cutout: '60%',
+       //          responsive: true,
+       //          plugins: {
+       //              title: {
+       //                  display: true,
+       //                  text: 'Mem Test',
+       //                  font: { weight: 'bold', size: 16 }
+       //              },
+       //              legend: {
+       //                  position: 'bottom'
+       //              },
+       //              tooltip: {
+       //                  callbacks: {
+       //                      label: context => `${context.label}: ${context.raw}`
+       //                  }
+       //              }
+       //          },
+       //          maintainAspectRatio: false
+       //      },
+       //      plugins: [totalCenterText]
+       //  });
+       //  });
+
+
+        $.get('/DashBoardMaster/GetyieldDatatwo', { Fgname: fgname, Type: type }, function (datayn) {
         $('#spinnerPietwo').hide();
         if (!datayn || datayn.length === 0) return;
 
-        debugger;
         console.log(datayn);
 
         // Extract and prepare data
         const passCount = datayn.reduce((sum, d) => sum + parseFloat(d.passcountyield ?? 0), 0);
         const failCount = datayn.reduce((sum, d) => sum + parseFloat(d.failcountyield ?? 0), 0);
-        const totalCount = datayn.map(d => parseFloat(d.yield ?? 0));
+        const totalCount = datayn.reduce((sum, d) => sum + parseFloat(d.yield ?? 0), 0);
 
         const labels = ['Pass', 'Fail'];
         const values = [passCount, failCount];
@@ -700,15 +771,26 @@
             options: {
                 cutout: '60%',
                 responsive: true,
+
+                // 👇 SAME CLICK FEATURE ADDED
+                onClick: function (evt, activeEls) {
+                    if (!activeEls.length) return;
+
+                    let index = activeEls[0].index;
+                    let clickedLabel = this.data.labels[index];
+
+                    if (clickedLabel === 'Fail') {
+                        getFailBreakdown2(fgname, type);   // 🔥 call your fail function
+                    }
+                },
+
                 plugins: {
                     title: {
                         display: true,
-                        text: 'Mem Test',
+                        text: 'Mem Test',   // Keep or change as needed
                         font: { weight: 'bold', size: 16 }
                     },
-                    legend: {
-                        position: 'bottom'
-                    },
+                    legend: { position: 'bottom' },
                     tooltip: {
                         callbacks: {
                             label: context => `${context.label}: ${context.raw}`
@@ -719,7 +801,31 @@
             },
             plugins: [totalCenterText]
         });
-        });
+    });
+
+        // -------------------------------------------------------------
+    //      CALL FAIL TYPE BREAKDOWN CONTROLLER
+    // -------------------------------------------------------------
+    function getFailBreakdown2(fgname, type) {
+
+        $.get('/DashBoardMaster/GetFailTypes2',
+            { Fgname: fgname, type: type },
+            function (data) {
+
+                console.log("Fail Breakdown: ", data);
+
+                if (!data || data.length === 0) return;
+
+                // Expected: list of fail type objects
+                // Convert to chart format:
+                const labels = data.map(x => x.fail_types);
+                const values = data.map(x => x.fail_type_ct);
+
+                displayFailBreakdownChart(labels, values);
+            }
+        );
+    }
+
 
       $.get('/DashBoardMaster/GetHourlytwo', { Fgname: fgname, Type: type }, function (data) {
          $('#spinnerLabLostwo').hide();
@@ -852,10 +958,22 @@
             options: {
                 cutout: '60%',
                 responsive: true,
+
+                                // 👇 SAME CLICK FEATURE ADDED
+                onClick: function (evt, activeEls) {
+                    if (!activeEls.length) return;
+
+                    let index = activeEls[0].index;
+                    let clickedLabel = this.data.labels[index];
+
+                    if (clickedLabel === 'Fail') {
+                        getFailBreakdown3(fgname, type);   // 🔥 call your fail function
+                    }
+                },
                 plugins: {
                     title: {
                         display: true,
-                        text: 'Pass Mark -Burn In Test',
+                        text: 'Pass Mark Test',
                         font: { weight: 'bold', size: 16 }
                     },
                     legend: {
@@ -872,6 +990,28 @@
             plugins: [totalCenterText]
         });
         });
+
+            //      CALL FAIL TYPE BREAKDOWN CONTROLLER
+    // -------------------------------------------------------------
+    function getFailBreakdown3(fgname, type) {
+
+        $.get('/DashBoardMaster/GetFailTypes3',
+            { Fgname: fgname, type: type },
+            function (data) {
+
+                console.log("Fail Breakdown: ", data);
+
+                if (!data || data.length === 0) return;
+
+                // Expected: list of fail type objects
+                // Convert to chart format:
+                const labels = data.map(x => x.fail_types);
+                const values = data.map(x => x.fail_type_ct);
+
+                displayFailBreakdownChart(labels, values);
+            }
+        );
+    }
 
       $.get('/DashBoardMaster/GetHourlythree', { Fgname: fgname, Type: type }, function (data) {
          $('#spinnerLabLosthree').hide();
