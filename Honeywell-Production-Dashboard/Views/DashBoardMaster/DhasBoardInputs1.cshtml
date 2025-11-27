@@ -1,0 +1,475 @@
+﻿@model dashboardfilter
+@using System.Text.Json
+@{
+    ViewBag.Title = "Dashboard";
+}
+
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="https://fonts.googleapis.com/css2?family=Roboto&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="~/css/dashboard.css" />
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
+
+<style>
+    /* Dashboard Layout */
+    .dashboard-container {
+        display: flex;
+        flex-direction: column;
+        margin-bottom: 30px;
+    }
+
+    .chart-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 20px;
+        justify-content: center;
+    }
+
+    .chart-card {
+        background: #fff;
+        padding: 15px;
+        border-radius: 10px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        flex: 1 1 400px; /* Minimum width 400px, grows as needed */
+        max-width: 100%;
+        min-height: 350px;
+        position: relative;
+    }
+
+        .chart-card.full-width {
+            flex: 1 1 100%;
+            min-height: 450px; /* Extra height for wide bar charts */
+        }
+
+    canvas {
+        width: 100% !important;
+        height: 100% !important;
+    }
+
+    .spinner {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        display: none;
+        z-index: 10;
+    }
+
+    /* Filter Bar */
+    .filter-bar select,
+    .filter-bar input {
+        padding: 5px 10px;
+    }
+
+    /* Modal Styles */
+    .modal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0,0,0,0.6);
+        display: none;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+    }
+
+    .modal-content {
+        width: 600px;
+        background: white;
+        padding: 20px;
+        border-radius: 10px;
+        position: relative;
+    }
+
+    #closeFailModal {
+        position: absolute;
+        top: 10px;
+        right: 15px;
+        cursor: pointer;
+        font-size: 22px;
+        font-weight: bold;
+    }
+</style>
+
+<!-- ====================================== -->
+<!-- FILTERS -->
+<!-- ====================================== -->
+<div class="filter-bar" style="display:flex; gap:20px; margin:20px 0; align-items:center; justify-content:center;">
+    <!-- Model Dropdown -->
+    <div>
+        <label for="ModelId">Model</label><br />
+        <select id="ModelId" class="form-select" style="width:200px;">
+            <option value="">-- Select Model --</option>
+            @foreach (var item in Model.ModelList)
+            {
+                <option value="@item.Text">@item.Text</option>
+            }
+        </select>
+    </div>
+
+    <!-- FG Number Dropdown -->
+    <div>
+        <label for="FgNumber">FG Number</label><br />
+        <select id="FgNumber" class="form-select" style="width:200px;">
+            <option value="">-- Select FG Number --</option>
+        </select>
+    </div>
+
+    <!-- Date Input -->
+    <div>
+        <label for="SelectedDate">Date</label><br />
+        <input id="SelectedDate" type="date" class="form-control" style="width:180px;" />
+    </div>
+
+    <!-- Apply Filters Button -->
+    <div style="padding-top:22px;">
+        <button id="btnApplyFilters" class="btn btn-primary">Apply</button>
+    </div>
+</div>
+
+<div class="">
+
+    <!-- Main Hourly Output Bar (Full Width) -->
+    <div class="dashboard-container">
+        <div class="chart-row">
+            <div class="chart-card full-width">
+                <div class="spinner" id="spinnerBarChart"></div>
+                <canvas id="BarGraphFull" height="100"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hourly Plan 1 Bar Chart -->
+    <div class="dashboard-container">
+        <div class="chart-row">
+            <div class="chart-card full-width">
+                <div class="spinner" id="spinnerLabLosone"></div>
+                <canvas id="hourlyplanOne" height="100"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hourly Plan 2 Bar Chart -->
+    <div class="dashboard-container">
+        <div class="chart-row">
+            <div class="chart-card full-width">
+                <div class="spinner" id="spinnerLabLostwo"></div>
+                <canvas id="hourlyplantwo" height="100"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hourly Plan 3 Bar Chart -->
+    <div class="dashboard-container">
+        <div class="chart-row">
+            <div class="chart-card full-width">
+                <div class="spinner" id="spinnerLabLosthree"></div>
+                <canvas id="hourlyplanthree" height="100"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Yield Pie Charts Row -->
+    <div class="dashboard-container">
+        <div class="chart-row">
+            <div class="chart-card">
+                <div class="spinner" id="spinnerPieone"></div>
+                <canvas id="yieldpiechartOne" height="100"></canvas>
+            </div>
+            <div class="chart-card">
+                <div class="spinner" id="spinnerPietwo"></div>
+                <canvas id="yieldpiecharttwo" height="100"></canvas>
+            </div>
+            <div class="chart-card">
+                <div class="spinner" id="spinnerPiethree"></div>
+                <canvas id="yieldpiechartthree" height="100"></canvas>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+
+<!-- Fail Modal -->
+<div id="failModal" class="modal">
+    <div class="modal-content">
+        <span id="closeFailModal">&times;</span>
+        <h3 style="text-align:center; margin-bottom:20px;">Fail Breakdown</h3>
+        <canvas id="failBreakdownChart" height="230"></canvas>
+    </div>
+</div>
+
+
+<script>
+    $(document).ready(function () {
+
+        // ---------------------------
+        // GLOBAL FILTER VALUES
+        // ---------------------------
+        let fgname = "";
+        let type = "";
+        let selectedDate = "";
+
+        // ---------------------------
+        // MODEL CHANGE: Populate FG Numbers
+        // ---------------------------
+        $("#ModelId").change(function () {
+            let modelText = $(this).find(":selected").text();
+            if (modelText === "-- Select Model --") {
+                $("#FgNumber").empty().append('<option value="">-- Select FG Number --</option>');
+                return;
+            }
+
+            $.get("/DashBoardMaster/GetFgNumbersByModel", { modelId: modelText }, function (data) {
+                $("#FgNumber").empty().append('<option value="">-- Select FG Number --</option>');
+                data.forEach(item => $("#FgNumber").append(`<option value="${item.text}">${item.text}</option>`));
+            });
+        });
+
+        // ---------------------------
+        // APPLY FILTERS BUTTON
+        // ---------------------------
+        $("#btnApplyFilters").click(function () {
+            fgname = $("#FgNumber").find(":selected").text();
+            type = $("#ModelId").find(":selected").text();
+            let rawDate = $("#SelectedDate").val();
+
+            if (!fgname || !type || !rawDate) {
+                alert("Please select Model, FG Number & Date");
+                return;
+            }
+
+            let parts = rawDate.split("-");
+            selectedDate = `${parts[2]}-${parts[1]}-${parts[0]}`;
+            console.log("Sent to controller:", selectedDate);
+
+            loadAllCharts();
+        });
+
+        // ---------------------------
+        // PIE CHART FUNCTION
+        // ---------------------------
+       function loadPieChart(canvasId, spinnerId, url, failTypeId = 1, chartTitle) {
+        debugger; // Step through this in DevTools
+        $('#' + spinnerId).show();
+        console.log(`Loading pie chart for canvas: ${canvasId}, URL: ${url}, failTypeId: ${failTypeId}`);
+
+        $.get(url, { Fgname: fgname, Type: type, Date: selectedDate }, function(datay) {
+            $('#' + spinnerId).hide();
+            console.log("Raw data returned:", datay);
+
+            if (!datay || datay.length === 0) {
+                console.warn("No data returned for", canvasId);
+                return;
+            }
+
+            const passCount = datay.reduce((sum, d) => sum + parseFloat(d.passcountyield ?? 0), 0);
+            const failCount = datay.reduce((sum, d) => sum + parseFloat(d.failcountyield ?? 0), 0);
+            const totalCount = datay.reduce((sum, d) => sum + parseFloat(d.yield ?? 0), 0);
+
+            const labels = ['Pass', 'Fail'];
+            const values = [passCount, failCount];
+            const bgColors = ['#4CAF50', '#F44336'];
+
+            console.log("Pie Chart Labels:", labels);
+            console.log("Pie Chart Values:", values);
+
+            const canvasEl = document.getElementById(canvasId);
+            if (!canvasEl) {
+                console.error(`Canvas element with id "${canvasId}" not found!`);
+                return;
+            }
+
+            const ctx = canvasEl.getContext('2d');
+
+            // ✅ Safe destroy
+            if (window[canvasId] && typeof window[canvasId].destroy === "function") {
+                window[canvasId].destroy();
+                console.log(`Destroyed previous chart for canvas: ${canvasId}`);
+            }
+
+            const totalCenterText = {
+                id: 'totalCenterText',
+                afterDraw(chart) {
+                    const { ctx, chartArea: { width, height } } = chart;
+                    ctx.save();
+                    ctx.font = 'bold 12px Arial';
+                    ctx.fillStyle = '#000';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText(`Total: ${totalCount}`, width / 2, height / 2);
+                    ctx.restore();
+                }
+            };
+
+            try {
+                window[canvasId] = new Chart(ctx, {
+                    type: 'doughnut',
+                    data: { labels: labels, datasets: [{ data: values, backgroundColor: bgColors }] },
+                    options: {
+                        cutout: '60%',
+                        responsive: true,
+                        plugins: {
+                            title: { display: true, text: chartTitle },
+                            legend: { position: 'bottom' },
+                            tooltip: {
+                                callbacks: {
+                                    label: context => `${context.label}: ${context.raw}`
+                                }
+                            }
+                        },
+                        maintainAspectRatio: false,
+                        onClick: function(evt, activeEls) {
+                            if (!activeEls.length) return;
+                            const index = activeEls[0].index;
+                            if (labels[index] === 'Fail') loadFailBreakdown(failTypeId);
+                        }
+                    },
+                    plugins: [totalCenterText]
+                });
+                console.log(`Pie chart rendered successfully on canvas: ${canvasId}`);
+            } catch (err) {
+                console.error("Error rendering pie chart:", err);
+            }
+        }).fail(function(err){
+            console.error("AJAX call failed for pie chart:", err);
+            $('#' + spinnerId).hide();
+        });
+    }
+
+
+        // ---------------------------
+        // BAR CHART FUNCTION
+        // ---------------------------
+        function loadBarChart(canvasId, spinnerId, url, titleText) {
+            
+            $('#' + spinnerId).show();
+            $.get(url, { Fgname: fgname, Type: type, Date: selectedDate }, function(data) {
+                $('#' + spinnerId).hide();
+                if (!data || data.length === 0) return;
+
+                const labels = data.map(d => d.hour);
+                const values = data.map(d => parseFloat(d.hourvalue ?? 0));
+                const targets = data.map(d => parseFloat(d.target ?? 0));
+                const barColors = values.map(v => v >= 90 ? '#2ecc71' : '#e74c3c');
+
+                console.log("Bar Chart Labels:", labels);
+                console.log("Bar Chart Values:", values);
+
+                const ctx = document.getElementById(canvasId).getContext('2d');
+
+                // ✅ Safe destroy
+                if (window[canvasId] && typeof window[canvasId].destroy === "function") {
+                    window[canvasId].destroy();
+                }
+
+                window[canvasId] = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [
+                            // Uncomment below if you want target line
+                            // {
+                            //     type: 'line',
+                            //     label: 'Target',
+                            //     data: targets,
+                            //     borderColor: '#f1c40f',
+                            //     borderWidth: 3,
+                            //     tension: 0.3,
+                            //     pointBackgroundColor: '#f39c12',
+                            //     fill: false,
+                            // },
+                            {
+                                type: 'bar',
+                                label: 'Actual',
+                                data: values,
+                                backgroundColor: barColors,
+                                borderColor: '#2980b9',
+                                borderWidth: 1,
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: { position: 'bottom' },
+                            title: { display: true, text: titleText, font: { weight: 'bold', size: 16 } },
+                            tooltip: {
+                                callbacks: {
+                                    label: context => `${context.dataset.label}: ${context.raw.toFixed(2)}`
+                                }
+                            },
+                            datalabels: {
+                                anchor: 'end',
+                                align: 'bottom',
+                                clamp: true,
+                                color: '#000',
+                                font: { weight: 'bold' },
+                                formatter: value => value.toFixed(1)
+                            }
+                        },
+                        scales: {
+                            x: { title: { display: true, text: 'Hour' } },
+                            y: { beginAtZero: true, title: { display: true, text: 'Output' }, max: 100 }
+                        },
+                        maintainAspectRatio: false
+                    },
+                    plugins: [ChartDataLabels]
+                });
+            });
+        }
+
+        // ---------------------------
+        // FAIL BREAKDOWN
+        // ---------------------------
+        function loadFailBreakdown(failTypeId) {
+            
+            $.get("/DashBoardMaster/GetFailBreakdownbyfiler",
+                { Fgname: fgname, Type: type, Date: selectedDate, failtype: failTypeId },
+                function(result) {
+                    const canvasId = "failBreakdownChart";
+
+                    console.log("Fail Breakdown Labels:", result.labels);
+                    console.log("Fail Breakdown Values:", result.values);
+
+                    if (window[canvasId] && typeof window[canvasId].destroy === "function") {
+                        window[canvasId].destroy();
+                    }
+
+                    window[canvasId] = new Chart(document.getElementById(canvasId), {
+                        type: 'bar',
+                        data: { labels: result.labels, datasets: [{ label: "Fail Count", data: result.values, backgroundColor: "#c0392b" }] },
+                        options: { responsive: true, scales: { y: { beginAtZero: true } } }
+                    });
+
+                    $("#failModal").show();
+                });
+        }
+
+        // ---------------------------
+        // LOAD ALL CHARTS
+        // ---------------------------
+        function loadAllCharts() {
+            loadBarChart("BarGraphFull", "spinnerBarChart", "/DashBoardMaster/GetHourlyoutputfilter", "Line Hourly Output");
+            loadPieChart("yieldpiechartOne", "spinnerPieone", "/DashBoardMaster/GetyieldDataOnefilter", 1,"SPD Yield");
+            loadPieChart("yieldpiecharttwo", "spinnerPietwo", "/DashBoardMaster/GetyieldDatatwofilter", 2, "Mem Test Yield");
+            loadPieChart("yieldpiechartthree", "spinnerPiethree", "/DashBoardMaster/GetyieldDatathreefilter", 3, "Pass Mark Yield");
+            loadBarChart("hourlyplanOne", "spinnerLabLosone", "/DashBoardMaster/GetHourlyOnefilter", "SPD Hourly Output");
+            loadBarChart("hourlyplantwo", "spinnerLabLostwo", "/DashBoardMaster/GetHourlytwofilter", "Mem Test Hourly Output");
+            loadBarChart("hourlyplanthree", "spinnerLabLosthree", "/DashBoardMaster/GetHourlythreefilter", "Pass Mark Hourly Output");
+        }
+
+        // ---------------------------
+        // CLOSE FAIL MODAL
+        // ---------------------------
+        $("#closeFailModal").click(function () {
+            $("#failModal").hide();
+        });
+
+    });
+</script>
+
+

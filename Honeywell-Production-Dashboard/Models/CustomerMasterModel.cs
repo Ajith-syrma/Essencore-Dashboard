@@ -18,4 +18,6 @@ namespace Honeywell_Production_Dashboard.Models
 
         public List<ProductionDetails> inputDetails { get; set; }
     }
+
+
 }

@@ -8,6 +8,49 @@ namespace Honeywell_Production_Dashboard.Models
     {
         private readonly DataManagement dataManagement;
 
+        //public List<SelectListItem> GetModelList()
+        //{
+        //    // Example: Fetch from DB or hardcode for now
+        //    return new List<SelectListItem>
+        //    {
+        //        new SelectListItem { Value = "1", Text = "Model A" },
+        //        new SelectListItem { Value = "2", Text = "Model B" },
+        //        new SelectListItem { Value = "3", Text = "Model C" }
+        //    };
+        //}
+
+        public List<SelectListItem> GetModelList()
+        {
+            var modelname = dataManagement.progetmodeldetails();
+            return modelname;
+        }
+
+        public List<SelectListItem> GetFgNumberList(string modelId)
+        {
+            var fgName = dataManagement.getFgNamelist(modelId);
+            return fgName;
+        }
+
+        // Implementation for GetFgNumberList
+        //public List<SelectListItem> GetFgNumberList(int modelId)
+        //{
+        //    // Example: Fetch from DB based on modelId or hardcode
+        //    if (modelId == 1)
+        //        return new List<SelectListItem>
+        //        {
+        //            new SelectListItem { Value = "101", Text = "DDR" },
+        //            new SelectListItem { Value = "102", Text = "FG102" }
+        //        };
+        //    else if (modelId == 2)
+        //        return new List<SelectListItem>
+        //        {
+        //            new SelectListItem { Value = "201", Text = "FG201" },
+        //            new SelectListItem { Value = "202", Text = "FG202" }
+        //        };
+        //    else
+        //        return new List<SelectListItem>();
+        //}
+
         public DashBoardServices(DataManagement _datamanagement)
         {
             dataManagement = _datamanagement;
@@ -45,6 +88,12 @@ namespace Honeywell_Production_Dashboard.Models
         public List<Dashboard_HourlyOP> gethourlyone(Dashboard_HourlyOP dashboard_HourlyOP)
         {
             var resulthourly = dataManagement.gethourlyone(dashboard_HourlyOP);
+            return resulthourly;
+        }
+
+        public List<Dashboard_HourlyOP> gethourlyoutput(Dashboard_HourlyOP dashboard_HourlyOP)
+        {
+            var resulthourly = dataManagement.gethourlyoutput(dashboard_HourlyOP);
             return resulthourly;
         }
 
@@ -314,8 +363,75 @@ namespace Honeywell_Production_Dashboard.Models
         }
 
 
+        //-------------new filter code
+
+        public List<Dashboard_HourlyOP> gethourlyonefilter(Dashboard_HourlyOP dashboard_HourlyOP)
+        {
+            var resulthourly = dataManagement.gethourlyonefilter(dashboard_HourlyOP);
+            return resulthourly;
+        }
+
+        public List<Dashboard_HourlyOP> gethourlyoutputfilter(Dashboard_HourlyOP dashboard_HourlyOP)
+        {
+            var resulthourly = dataManagement.gethourlyoutputfilter(dashboard_HourlyOP);
+            return resulthourly;
+        }
+
+        public List<Dashboard_HourlyOP> getyieldDataOnefilter(Dashboard_HourlyOP dashboard_HourlyOP)
+        {
+            var resulthourly = dataManagement.getyieldDataOnefilter(dashboard_HourlyOP);
+            return resulthourly;
+        }
+
+        public List<Dashboard_HourlyOP> gethourlytwofilter(Dashboard_HourlyOP dashboard_HourlyOP)
+        {
+            var resulthourly = dataManagement.gethourlytwofilter(dashboard_HourlyOP);
+            return resulthourly;
+        }
+
+        public List<Dashboard_HourlyOP> getyieldDatatwofilter(Dashboard_HourlyOP dashboard_HourlyOP)
+        {
+            var resulthourly = dataManagement.getyieldDatatwofilter(dashboard_HourlyOP);
+            return resulthourly;
+        }
+
+        public List<Dashboard_HourlyOP> gethourlythreefilter(Dashboard_HourlyOP dashboard_HourlyOP)
+        {
+            var resulthourly = dataManagement.gethourlythreefilter(dashboard_HourlyOP);
+            return resulthourly;
+        }
+
+        public List<Dashboard_HourlyOP> getyieldDatathreefilter(Dashboard_HourlyOP dashboard_HourlyOP)
+        {
+            var resulthourly = dataManagement.getyieldDatathreefilter(dashboard_HourlyOP);
+            return resulthourly;
+        }
+
+        public List<Dashboard_HourlyOP> getfailtype1filter(Dashboard_HourlyOP dashboard_HourlyOP)
+        {
+            var failresult = dataManagement.getfailtypevaluefilter(dashboard_HourlyOP);
+            return failresult;
+        }
 
 
+        public List<Dashboard_HourlyOP> getfailtype2filter(Dashboard_HourlyOP dashboard_HourlyOP)
+        {
+            var failresult = dataManagement.getfailtypevalue2(dashboard_HourlyOP);
+            return failresult;
+        }
+
+
+        public List<Dashboard_HourlyOP> getfailtype3filter(Dashboard_HourlyOP dashboard_HourlyOP)
+        {
+            var failresult = dataManagement.getfailtypevalue3(dashboard_HourlyOP);
+            return failresult;
+        }
+
+        public List<Dashboard_HourlyOP> getfailtypefilter(Dashboard_HourlyOP dashboard_HourlyOP)
+        {
+            var failresult = dataManagement.getfailtypevaluefilter(dashboard_HourlyOP);
+            return failresult;
+        }
 
     }
 }

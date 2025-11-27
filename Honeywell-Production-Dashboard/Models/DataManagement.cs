@@ -1,6 +1,7 @@
 ﻿
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.CodeAnalysis.Elfie.Diagnostics;
+using System;
 using System.Data;
 using System.Data.SqlClient;
 using static System.Runtime.InteropServices.JavaScript.JSType;
@@ -13,8 +14,10 @@ namespace Honeywell_Production_Dashboard.Models
         private readonly string ConnectionString;
         private readonly string Prod_ConnectionString;
         private readonly string A4;
+        private readonly string barcodecon;
         public DataManagement(IConfiguration configuration)
         {
+            barcodecon = configuration.GetConnectionString("conn1");
             ConnectionString = configuration.GetConnectionString("conn");
             Prod_ConnectionString = configuration.GetConnectionString("connProdcurtion");
             A4 = configuration.GetConnectionString("connProdcurtionA4");
@@ -804,6 +807,62 @@ namespace Honeywell_Production_Dashboard.Models
             return lstPerformance;
         }
 
+        public List<Dashboard_HourlyOP> gethourlyoutput(Dashboard_HourlyOP dashboard_HourlyOP)
+        {
+            List<Dashboard_HourlyOP> lsthroutputDashboard = new List<Dashboard_HourlyOP>();
+            Dashboard_HourlyOP objDashboard0;
+            try
+            {
+                var date = DateTime.Now.Date;
+                string proc = string.Empty;
+                string shift = GetShiftLabel(DateTime.Now);
+                string conn = string.Empty;
+                proc = "PRO_ESSENCORE_DASHBOARD_HOURLY_OUTPUT";
+                conn = A4;
+
+                using (SqlConnection sqlhorlyop = new SqlConnection(conn))
+                {
+
+                    using (SqlCommand sqlcmdop = new SqlCommand(proc, sqlhorlyop))
+                    {
+                        sqlcmdop.CommandType = CommandType.StoredProcedure;
+
+                        // sqlcmdyield.Parameters.AddWithValue("@type", "HOURLY");
+                        // sqlcmdyield.Parameters.AddWithValue("@fg", dashboard_HourlyOP.FGName);
+
+                        sqlcmdop.Parameters.AddWithValue("@stage_name", "Mem Test");
+                        sqlcmdop.Parameters.AddWithValue("@stage_id", 239);
+                        sqlcmdop.Parameters.AddWithValue("@shiftvalue", shift);
+                        //sqlcmdyield.Parameters.AddWithValue("@targetval", "85");
+
+
+                        SqlDataAdapter dyhourlyop = new SqlDataAdapter(sqlcmdop);
+                        DataTable dtyhourlyop = new DataTable();
+                        dyhourlyop.Fill(dtyhourlyop);
+                        if (dtyhourlyop.Rows.Count > 0)
+                        {
+                            foreach (DataRow dr in dtyhourlyop.Rows)
+                            {
+                                objDashboard0 = new Dashboard_HourlyOP();
+                                objDashboard0.Stage = "Mem Test";
+                                objDashboard0.hour = Convert.ToInt32(dr["HOUR"].ToString());
+                                objDashboard0.hourvalue = Convert.ToInt32(dr["VALUE"].ToString());
+                                objDashboard0.Target = Convert.ToInt32(dr["TARGET"].ToString());
+                                lsthroutputDashboard.Add(objDashboard0);
+                            }
+                        }
+                    }
+
+                }
+            }
+            catch (Exception ex)
+            {
+                return lsthroutputDashboard;
+            }
+
+            return lsthroutputDashboard;
+        }
+
 
         public List<Dashboard_HourlyOP> gethourlyone(Dashboard_HourlyOP dashboard_HourlyOP)
         {
@@ -1388,6 +1447,78 @@ namespace Honeywell_Production_Dashboard.Models
 
             return lstyieldDashboard;
         }
+
+
+        public List<SelectListItem> progetmodeldetails()
+        {
+            List<SelectListItem> modelname = new List<SelectListItem>();
+            try
+            {
+                using (SqlConnection con = new SqlConnection(barcodecon))
+                {
+                    using (SqlCommand cmd = new SqlCommand("pro_get_Model_name", con))
+                    {
+                        cmd.CommandType = System.Data.CommandType.StoredProcedure;
+                        cmd.Parameters.AddWithValue("@model", "model");
+                        SqlDataAdapter da = new SqlDataAdapter(cmd);
+                        DataTable dataTable = new DataTable();
+                        da.Fill(dataTable);
+                        if (dataTable != null)
+                        {
+                            foreach (DataRow dr in dataTable.Rows)
+                            {
+                                modelname.Add(new SelectListItem
+                                {
+                                    Text = dr["model"].ToString(),
+                                  //  Value = dr["customerid"].ToString()
+                                });
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                return modelname;
+            }
+            return modelname;
+        }
+
+        public List<SelectListItem> getFgNamelist(string modelid)
+        {
+            List<SelectListItem> FgName = new List<SelectListItem>();
+            try
+            {
+                using (SqlConnection sqlcon = new SqlConnection(barcodecon))
+                {
+                    using (SqlCommand sqlCommand = new SqlCommand("pro_get_Model_name", sqlcon))
+                    {
+                        sqlCommand.CommandType = CommandType.StoredProcedure;
+                        sqlCommand.Parameters.AddWithValue("@model", modelid);
+                        SqlDataAdapter sqlDataAdapter = new SqlDataAdapter(sqlCommand);
+                        DataTable dt = new DataTable();
+                        sqlDataAdapter.Fill(dt);
+                        if (dt != null)
+                        {
+                            foreach (DataRow drnew in dt.Rows)
+                            {
+                                FgName.Add(new SelectListItem
+                                {
+                                    Text = drnew["Fg_Name"].ToString(),
+                                    Value = drnew["id"].ToString()
+                                });
+                            }
+                        }
+                    }
+                }
+
+            }
+            catch (Exception ex)
+            {
+                return FgName;
+            }
+            return FgName;
+        }
         public void writeErrorMessage(string Message, string FuncationName)
         {
             // Ensure the directory exists
@@ -1532,6 +1663,599 @@ namespace Honeywell_Production_Dashboard.Models
         }
 
         public List<Dashboard_HourlyOP> getfailtypevalue3(Dashboard_HourlyOP dashboard_HourlyOP)
+        {
+            List<Dashboard_HourlyOP> lstfailtypes = new List<Dashboard_HourlyOP>();
+
+            try
+            {
+                var date = DateTime.Now.Date;
+                string shift = GetShiftLabel(DateTime.Now);
+
+                using (SqlConnection sqlConn = new SqlConnection(A4))
+                {
+                    using (SqlCommand cmd = new SqlCommand("pro_getfailtypes", sqlConn))
+                    {
+                        cmd.CommandType = CommandType.StoredProcedure;
+
+
+
+                        //cmd.Parameters.AddWithValue("@type", "V200");
+                        //cmd.Parameters.AddWithValue("@fg", "ECH3HWI00001");
+                        //cmd.Parameters.AddWithValue("@date", "25-09-2025");
+                        //cmd.Parameters.AddWithValue("@shift", "SHIFT-A");
+
+
+                        //cmd.Parameters.AddWithValue("@type", dashboard_HourlyOP.TestType);
+                        //cmd.Parameters.AddWithValue("@fg", dashboard_HourlyOP.FGName);
+                        //cmd.Parameters.AddWithValue("@date", date.ToString("dd-MM-yyyy"));
+                        cmd.Parameters.AddWithValue("@stagename", "Pass Mark Test");
+                        cmd.Parameters.AddWithValue("@shiftvalue", shift);
+
+                        SqlDataAdapter da = new SqlDataAdapter(cmd);
+                        DataTable dt = new DataTable();
+                        da.Fill(dt);
+
+                        if (dt.Rows.Count > 0)
+                        {
+                            foreach (DataRow dr in dt.Rows)
+                            {
+                                Dashboard_HourlyOP objfailDashboard = new Dashboard_HourlyOP
+                                {
+                                    fail_types = dr["FAILTYPES"].ToString(),
+                                    fail_type_ct = Convert.ToInt32(dr["FAILCOUNT"].ToString()),
+                                    //  Totalcount = Convert.ToInt32(dr["TOTALCOUNT"])
+                                };
+
+                                lstfailtypes.Add(objfailDashboard);
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                return lstfailtypes; // Return empty list on error
+            }
+
+            return lstfailtypes;
+        }
+
+        //------------------New filter code changes 
+
+
+        public List<Dashboard_HourlyOP> gethourlyoutputfilter(Dashboard_HourlyOP dashboard_HourlyOP)
+        {
+            List<Dashboard_HourlyOP> lsthroutputDashboard = new List<Dashboard_HourlyOP>();
+            Dashboard_HourlyOP objDashboard0;
+            try
+            {
+                var date = DateTime.Now.Date;
+                string proc = string.Empty;
+                string shift = GetShiftLabel(DateTime.Now);
+                string conn = string.Empty;
+                proc = "PRO_ESSENCORE_DASHBOARD_HOURLY_OUTPUT_FILTER";
+                conn = A4;
+
+                using (SqlConnection sqlhorlyop = new SqlConnection(conn))
+                {
+
+                    using (SqlCommand sqlcmdop = new SqlCommand(proc, sqlhorlyop))
+                    {
+                        sqlcmdop.CommandType = CommandType.StoredProcedure;
+
+                        // sqlcmdyield.Parameters.AddWithValue("@type", "HOURLY");
+                        sqlcmdop.Parameters.AddWithValue("@fgname", dashboard_HourlyOP.FGName);
+                        sqlcmdop.Parameters.AddWithValue("@date", dashboard_HourlyOP.Date);
+
+                        sqlcmdop.Parameters.AddWithValue("@stage_name", "Mem Test");
+                        sqlcmdop.Parameters.AddWithValue("@stage_id", 239);
+                        //sqlcmdop.Parameters.AddWithValue("@shiftvalue", shift);
+                        //sqlcmdyield.Parameters.AddWithValue("@targetval", "85");
+
+
+                        SqlDataAdapter dyhourlyop = new SqlDataAdapter(sqlcmdop);
+                        DataTable dtyhourlyop = new DataTable();
+                        dyhourlyop.Fill(dtyhourlyop);
+                        if (dtyhourlyop.Rows.Count > 0)
+                        {
+                            foreach (DataRow dr in dtyhourlyop.Rows)
+                            {
+                                objDashboard0 = new Dashboard_HourlyOP();
+                                objDashboard0.Stage = "Mem Test";
+                                objDashboard0.hour = Convert.ToInt32(dr["HOUR"].ToString());
+                                objDashboard0.hourvalue = Convert.ToInt32(dr["VALUE"].ToString());
+                                objDashboard0.Target = Convert.ToInt32(dr["TARGET"].ToString());
+                                lsthroutputDashboard.Add(objDashboard0);
+                            }
+                        }
+                    }
+
+                }
+            }
+            catch (Exception ex)
+            {
+                return lsthroutputDashboard;
+            }
+
+            return lsthroutputDashboard;
+        }
+
+
+        public List<Dashboard_HourlyOP> gethourlyonefilter(Dashboard_HourlyOP dashboard_HourlyOP)
+        {
+            List<Dashboard_HourlyOP> lstyieldDashboard = new List<Dashboard_HourlyOP>();
+            Dashboard_HourlyOP objDashboard1;
+            try
+            {
+                var date = DateTime.Now.Date;
+                string proc = string.Empty;
+                string shift = GetShiftLabel(DateTime.Now);
+                string conn = string.Empty;
+                proc = "PRO_ESSENCORE_DASHBOARD_HOURLY_YIELD_FILTER";
+                conn = A4;
+
+                using (SqlConnection sqlhorly = new SqlConnection(conn))
+                {
+
+                    using (SqlCommand sqlcmdyield = new SqlCommand(proc, sqlhorly))
+                    {
+                        sqlcmdyield.CommandType = CommandType.StoredProcedure;
+
+                        // sqlcmdyield.Parameters.AddWithValue("@type", "HOURLY");
+                        sqlcmdyield.Parameters.AddWithValue("@fgname", dashboard_HourlyOP.FGName);
+                        sqlcmdyield.Parameters.AddWithValue("@date", dashboard_HourlyOP.Date);
+
+                        sqlcmdyield.Parameters.AddWithValue("@stage_name", "SPD");
+                        sqlcmdyield.Parameters.AddWithValue("@stage_id", 202);
+                       // sqlcmdyield.Parameters.AddWithValue("@shiftvalue", shift);
+                        //sqlcmdyield.Parameters.AddWithValue("@targetval", "85");
+
+
+                        SqlDataAdapter dyhourly = new SqlDataAdapter(sqlcmdyield);
+                        DataTable dtyhourly = new DataTable();
+                        dyhourly.Fill(dtyhourly);
+                        if (dtyhourly.Rows.Count > 0)
+                        {
+                            foreach (DataRow dr in dtyhourly.Rows)
+                            {
+                                objDashboard1 = new Dashboard_HourlyOP();
+                                objDashboard1.Stage = "SPD";
+                                objDashboard1.hour = Convert.ToInt32(dr["HOUR"].ToString());
+                                objDashboard1.hourvalue = Convert.ToInt32(dr["VALUE"].ToString());
+                                objDashboard1.Target = Convert.ToInt32(dr["TARGET"].ToString());
+                                lstyieldDashboard.Add(objDashboard1);
+                            }
+                        }
+                    }
+
+                }
+            }
+            catch (Exception ex)
+            {
+                return lstyieldDashboard;
+            }
+
+            return lstyieldDashboard;
+        }
+        public List<Dashboard_HourlyOP> gethourlytwofilter(Dashboard_HourlyOP dashboard_HourlyOP)
+        {
+            List<Dashboard_HourlyOP> lstyieldDashboard = new List<Dashboard_HourlyOP>();
+            Dashboard_HourlyOP objDashboard1;
+            try
+            {
+                var date = DateTime.Now.Date;
+                string proc = string.Empty;
+                string shift = GetShiftLabel(DateTime.Now);
+                string conn = string.Empty;
+                proc = "PRO_ESSENCORE_DASHBOARD_HOURLY_YIELD_FILTER";
+                conn = A4;
+
+                using (SqlConnection sqlhorly = new SqlConnection(conn))
+                {
+
+                    using (SqlCommand sqlcmdyield = new SqlCommand(proc, sqlhorly))
+                    {
+                        sqlcmdyield.CommandType = CommandType.StoredProcedure;
+
+                        //sqlcmdyield.Parameters.AddWithValue("@type", "HOURLY");
+                        sqlcmdyield.Parameters.AddWithValue("@fgname", dashboard_HourlyOP.FGName);
+                        sqlcmdyield.Parameters.AddWithValue("@date", dashboard_HourlyOP.Date);
+                        //sqlcmdyield.Parameters.AddWithValue("@Stagevalue", "Case Test");
+                        //sqlcmdyield.Parameters.AddWithValue("@dateval", "31-10-2025");
+                        //sqlcmdyield.Parameters.AddWithValue("@targetval", "85");
+
+                        sqlcmdyield.Parameters.AddWithValue("@stage_name", "Mem Test");
+                        sqlcmdyield.Parameters.AddWithValue("@stage_id", 239);
+                       // sqlcmdyield.Parameters.AddWithValue("@shiftvalue", shift);
+                        // sqlcmdyield.Parameters.AddWithValue("@targetval", "85");
+
+                        SqlDataAdapter dyhourly = new SqlDataAdapter(sqlcmdyield);
+                        DataTable dtyhourly = new DataTable();
+                        dyhourly.Fill(dtyhourly);
+                        if (dtyhourly.Rows.Count > 0)
+                        {
+                            foreach (DataRow dr in dtyhourly.Rows)
+                            {
+                                objDashboard1 = new Dashboard_HourlyOP();
+                                objDashboard1.Stage = "Mem Test";
+                                objDashboard1.hour = Convert.ToInt32(dr["HOUR"].ToString());
+                                objDashboard1.hourvalue = Convert.ToInt32(dr["VALUE"].ToString());
+                                objDashboard1.Target = Convert.ToInt32(dr["TARGET"].ToString());
+                                lstyieldDashboard.Add(objDashboard1);
+                            }
+                        }
+                    }
+
+                }
+            }
+            catch (Exception ex)
+            {
+                return lstyieldDashboard;
+            }
+
+            return lstyieldDashboard;
+        }
+
+        public List<Dashboard_HourlyOP> gethourlythreefilter(Dashboard_HourlyOP dashboard_HourlyOP)
+        {
+            List<Dashboard_HourlyOP> lstyieldDashboard = new List<Dashboard_HourlyOP>();
+            Dashboard_HourlyOP objDashboard1;
+            try
+            {
+                var date = DateTime.Now.Date;
+                string proc = string.Empty;
+                string shift = GetShiftLabel(DateTime.Now);
+                string conn = string.Empty;
+                proc = "PRO_ESSENCORE_DASHBOARD_HOURLY_YIELD_FILTER";
+                conn = A4;
+
+                using (SqlConnection sqlhorly = new SqlConnection(conn))
+                {
+
+                    using (SqlCommand sqlcmdyield = new SqlCommand(proc, sqlhorly))
+                    {
+                        sqlcmdyield.CommandType = CommandType.StoredProcedure;
+
+                        //sqlcmdyield.Parameters.AddWithValue("@type", "HOURLY");
+                        sqlcmdyield.Parameters.AddWithValue("@fgname", dashboard_HourlyOP.FGName);
+                        sqlcmdyield.Parameters.AddWithValue("@date", dashboard_HourlyOP.Date);
+                        //sqlcmdyield.Parameters.AddWithValue("@Stagevalue", "FCT");
+                        //sqlcmdyield.Parameters.AddWithValue("@dateval", "31-10-2025");
+                        //sqlcmdyield.Parameters.AddWithValue("@targetval", "85");
+
+
+                        sqlcmdyield.Parameters.AddWithValue("@stage_name", "Pass Mark Test");
+                        sqlcmdyield.Parameters.AddWithValue("@stage_id", 239);
+                        //sqlcmdyield.Parameters.AddWithValue("@shiftvalue", shift);
+                        //sqlcmdyield.Parameters.AddWithValue("@targetval", "85");
+
+
+
+                        SqlDataAdapter dyhourly = new SqlDataAdapter(sqlcmdyield);
+                        DataTable dtyhourly = new DataTable();
+                        dyhourly.Fill(dtyhourly);
+                        if (dtyhourly.Rows.Count > 0)
+                        {
+                            foreach (DataRow dr in dtyhourly.Rows)
+                            {
+                                objDashboard1 = new Dashboard_HourlyOP();
+                                objDashboard1.Stage = "Pass Mark Test";
+                                objDashboard1.hour = Convert.ToInt32(dr["HOUR"].ToString());
+                                objDashboard1.hourvalue = Convert.ToInt32(dr["VALUE"].ToString());
+                                objDashboard1.Target = Convert.ToInt32(dr["TARGET"].ToString());
+                                lstyieldDashboard.Add(objDashboard1);
+                            }
+                        }
+                    }
+
+                }
+            }
+            catch (Exception ex)
+            {
+                return lstyieldDashboard;
+            }
+
+            return lstyieldDashboard;
+        }
+
+
+        public List<Dashboard_HourlyOP> getyieldDataOnefilter(Dashboard_HourlyOP dashboard_HourlyOP)
+        {
+            List<Dashboard_HourlyOP> lstyieldDashboard = new List<Dashboard_HourlyOP>();
+            Dashboard_HourlyOP objDashboard1;
+            try
+            {
+                var date = DateTime.Now.Date;
+                string proc = string.Empty;
+                string shift = GetShiftLabel(DateTime.Now);
+                string conn = string.Empty;
+                proc = "PRO_ESSENCORE_DASHBOARD_OUTPUT_COUNT_FILTER";
+                conn = A4;
+
+                using (SqlConnection sqlhorly = new SqlConnection(conn))
+                {
+
+                    using (SqlCommand sqlcmdyield = new SqlCommand(proc, sqlhorly))
+                    {
+                        sqlcmdyield.CommandType = CommandType.StoredProcedure;
+                        //sqlcmdyield.Parameters.AddWithValue("@type", "YIELD");
+                        sqlcmdyield.Parameters.AddWithValue("@fgname", dashboard_HourlyOP.FGName);
+                        sqlcmdyield.Parameters.AddWithValue("@date", dashboard_HourlyOP.Date);
+                        //sqlcmdyield.Parameters.AddWithValue("@dateval", "31-10-2025");
+                        //sqlcmdyield.Parameters.AddWithValue("@targetval", "85");
+
+                        sqlcmdyield.Parameters.AddWithValue("@stage_name", "SPD");
+                        sqlcmdyield.Parameters.AddWithValue("@stage_id", 202);
+                        //sqlcmdyield.Parameters.AddWithValue("@shiftvalue", shift);
+                        //sqlcmdyield.Parameters.AddWithValue("@targetval", "85");
+
+                        SqlDataAdapter dyhourly = new SqlDataAdapter(sqlcmdyield);
+                        DataTable dtyhourly = new DataTable();
+                        dyhourly.Fill(dtyhourly);
+                        if (dtyhourly.Rows.Count > 0)
+                        {
+                            foreach (DataRow dr in dtyhourly.Rows)
+                            {
+                                objDashboard1 = new Dashboard_HourlyOP();
+                                objDashboard1.Stage = "SPD";
+                                objDashboard1.Passcountyield = Convert.ToInt32(dr["PASSCOUNT"].ToString());
+                                objDashboard1.Failcountyield = Convert.ToInt32(dr["FAILCOUNT"].ToString());
+                                objDashboard1.Yield = Convert.ToDecimal(dr["YIELD"].ToString());
+                                lstyieldDashboard.Add(objDashboard1);
+                            }
+                        }
+                    }
+
+                }
+            }
+            catch (Exception ex)
+            {
+                return lstyieldDashboard;
+            }
+
+            return lstyieldDashboard;
+        }
+        public List<Dashboard_HourlyOP> getyieldDatatwofilter(Dashboard_HourlyOP dashboard_HourlyOP)
+        {
+            List<Dashboard_HourlyOP> lstyieldDashboard = new List<Dashboard_HourlyOP>();
+            Dashboard_HourlyOP objDashboard1;
+            try
+            {
+                var date = DateTime.Now.Date;
+                string proc = string.Empty;
+                string shift = GetShiftLabel(DateTime.Now);
+                string conn = string.Empty;
+                proc = "PRO_ESSENCORE_DASHBOARD_OUTPUT_COUNT_FILTER";
+                conn = A4;
+
+                using (SqlConnection sqlhorly = new SqlConnection(conn))
+                {
+
+                    using (SqlCommand sqlcmdyield = new SqlCommand(proc, sqlhorly))
+                    {
+                        sqlcmdyield.CommandType = CommandType.StoredProcedure;
+
+                        //sqlcmdyield.Parameters.AddWithValue("@type", "YIELD");
+                        sqlcmdyield.Parameters.AddWithValue("@fgname", dashboard_HourlyOP.FGName);
+                        sqlcmdyield.Parameters.AddWithValue("@date", dashboard_HourlyOP.Date);
+                        //sqlcmdyield.Parameters.AddWithValue("@dateval", "31-10-2025");
+                        //sqlcmdyield.Parameters.AddWithValue("@targetval", "85");
+
+                        sqlcmdyield.Parameters.AddWithValue("@stage_name", "Mem Test");
+                        sqlcmdyield.Parameters.AddWithValue("@stage_id", 239);
+                       // sqlcmdyield.Parameters.AddWithValue("@shiftvalue", shift);
+                        //sqlcmdyield.Parameters.AddWithValue("@targetval", "85");
+
+
+
+                        SqlDataAdapter dyhourly = new SqlDataAdapter(sqlcmdyield);
+                        DataTable dtyhourly = new DataTable();
+                        dyhourly.Fill(dtyhourly);
+                        if (dtyhourly.Rows.Count > 0)
+                        {
+                            foreach (DataRow dr in dtyhourly.Rows)
+                            {
+                                objDashboard1 = new Dashboard_HourlyOP();
+                                objDashboard1.Stage = "Mem Test";
+                                objDashboard1.Passcountyield = Convert.ToInt32(dr["PASSCOUNT"].ToString());
+                                objDashboard1.Failcountyield = Convert.ToInt32(dr["FAILCOUNT"].ToString());
+                                objDashboard1.Yield = Convert.ToDecimal(dr["YIELD"].ToString());
+                                lstyieldDashboard.Add(objDashboard1);
+                            }
+                        }
+                    }
+
+                }
+            }
+            catch (Exception ex)
+            {
+                return lstyieldDashboard;
+            }
+
+            return lstyieldDashboard;
+        }
+
+        public List<Dashboard_HourlyOP> getyieldDatathreefilter(Dashboard_HourlyOP dashboard_HourlyOP)
+        {
+            List<Dashboard_HourlyOP> lstyieldDashboard = new List<Dashboard_HourlyOP>();
+            Dashboard_HourlyOP objDashboard1;
+            try
+            {
+                var date = DateTime.Now.Date;
+                string proc = string.Empty;
+                string shift = GetShiftLabel(DateTime.Now);
+                string conn = string.Empty;
+                proc = "PRO_ESSENCORE_DASHBOARD_OUTPUT_COUNT_FILTER";
+                conn = A4;
+
+                using (SqlConnection sqlhorly = new SqlConnection(conn))
+                {
+
+                    using (SqlCommand sqlcmdyield = new SqlCommand(proc, sqlhorly))
+                    {
+                        sqlcmdyield.CommandType = CommandType.StoredProcedure;
+
+                        //sqlcmdyield.Parameters.AddWithValue("@type", "YIELD");
+                        sqlcmdyield.Parameters.AddWithValue("@fgname", dashboard_HourlyOP.FGName);
+                        sqlcmdyield.Parameters.AddWithValue("@date", dashboard_HourlyOP.Date);
+                        //sqlcmdyield.Parameters.AddWithValue("@dateval", "31-10-2025");
+                        //sqlcmdyield.Parameters.AddWithValue("@targetval", "85");
+
+
+                        sqlcmdyield.Parameters.AddWithValue("@stage_name", "Pass Mark Test");
+                        sqlcmdyield.Parameters.AddWithValue("@stage_id", 240);
+                       // sqlcmdyield.Parameters.AddWithValue("@shiftvalue", shift);
+                       // sqlcmdyield.Parameters.AddWithValue("@targetval", "85");
+
+                        SqlDataAdapter dyhourly = new SqlDataAdapter(sqlcmdyield);
+                        DataTable dtyhourly = new DataTable();
+                        dyhourly.Fill(dtyhourly);
+                        if (dtyhourly.Rows.Count > 0)
+                        {
+                            foreach (DataRow dr in dtyhourly.Rows)
+                            {
+                                objDashboard1 = new Dashboard_HourlyOP();
+                                objDashboard1.Stage = "Pass Mark Test";
+                                objDashboard1.Passcountyield = Convert.ToInt32(dr["PASSCOUNT"].ToString());
+                                objDashboard1.Failcountyield = Convert.ToInt32(dr["FAILCOUNT"].ToString());
+                                objDashboard1.Yield = Convert.ToDecimal(dr["YIELD"].ToString());
+                                lstyieldDashboard.Add(objDashboard1);
+                            }
+                        }
+                    }
+
+                }
+            }
+            catch (Exception ex)
+            {
+                return lstyieldDashboard;
+            }
+
+            return lstyieldDashboard;
+        }
+
+
+        public List<Dashboard_HourlyOP> getfailtypevaluefilter(Dashboard_HourlyOP dashboard_HourlyOP)
+        {
+            List<Dashboard_HourlyOP> lstfailtypes = new List<Dashboard_HourlyOP>();
+
+            try
+            {
+                var date = DateTime.Now.Date;
+                string shift = GetShiftLabel(DateTime.Now);
+                var stagename = string.Empty;
+                stagename = dashboard_HourlyOP.fail_type_id == 1 ? "SPD" :
+                            dashboard_HourlyOP.fail_type_id == 2 ? "Mem Test" :
+                            "Pass Mark Test";
+
+                using (SqlConnection sqlConn = new SqlConnection(A4))
+                {
+                    using (SqlCommand cmd = new SqlCommand("pro_getfailtypesfilter", sqlConn))
+                    {
+                        cmd.CommandType = CommandType.StoredProcedure;
+
+
+
+                        //cmd.Parameters.AddWithValue("@type", "V200");
+                        //cmd.Parameters.AddWithValue("@fg", "ECH3HWI00001");
+                        //cmd.Parameters.AddWithValue("@date", "25-09-2025");
+                        //cmd.Parameters.AddWithValue("@shift", "SHIFT-A");
+
+
+                        //cmd.Parameters.AddWithValue("@type", dashboard_HourlyOP.TestType);
+                        cmd.Parameters.AddWithValue("@fgname", dashboard_HourlyOP.FGName);
+                        cmd.Parameters.AddWithValue("@date", dashboard_HourlyOP.Date);
+                        cmd.Parameters.AddWithValue("@stagename", stagename);
+                       // cmd.Parameters.AddWithValue("@shiftvalue", shift);
+
+                        SqlDataAdapter da = new SqlDataAdapter(cmd);
+                        DataTable dt = new DataTable();
+                        da.Fill(dt);
+
+                        if (dt.Rows.Count > 0)
+                        {
+                            foreach (DataRow dr in dt.Rows)
+                            {
+                                Dashboard_HourlyOP objfailDashboard = new Dashboard_HourlyOP
+                                {
+                                    fail_types = dr["FAILTYPES"].ToString(),
+                                    fail_type_ct = Convert.ToInt32(dr["FAILCOUNT"].ToString()),
+                                    //  Totalcount = Convert.ToInt32(dr["TOTALCOUNT"])
+                                };
+
+                                lstfailtypes.Add(objfailDashboard);
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                return lstfailtypes; // Return empty list on error
+            }
+
+            return lstfailtypes;
+        }
+
+        public List<Dashboard_HourlyOP> getfailtypevalue2filter(Dashboard_HourlyOP dashboard_HourlyOP)
+        {
+            List<Dashboard_HourlyOP> lstfailtypes = new List<Dashboard_HourlyOP>();
+
+            try
+            {
+                var date = DateTime.Now.Date;
+                string shift = GetShiftLabel(DateTime.Now);
+
+                using (SqlConnection sqlConn = new SqlConnection(A4))
+                {
+                    using (SqlCommand cmd = new SqlCommand("pro_getfailtypes", sqlConn))
+                    {
+                        cmd.CommandType = CommandType.StoredProcedure;
+
+
+
+                        //cmd.Parameters.AddWithValue("@type", "V200");
+                        //cmd.Parameters.AddWithValue("@fg", "ECH3HWI00001");
+                        //cmd.Parameters.AddWithValue("@date", "25-09-2025");
+                        //cmd.Parameters.AddWithValue("@shift", "SHIFT-A");
+
+
+                        //cmd.Parameters.AddWithValue("@type", dashboard_HourlyOP.TestType);
+                        //cmd.Parameters.AddWithValue("@fg", dashboard_HourlyOP.FGName);
+                        //cmd.Parameters.AddWithValue("@date", date.ToString("dd-MM-yyyy"));
+                        cmd.Parameters.AddWithValue("@stagename", "Mem Test");
+                        cmd.Parameters.AddWithValue("@shiftvalue", shift);
+
+                        SqlDataAdapter da = new SqlDataAdapter(cmd);
+                        DataTable dt = new DataTable();
+                        da.Fill(dt);
+
+                        if (dt.Rows.Count > 0)
+                        {
+                            foreach (DataRow dr in dt.Rows)
+                            {
+                                Dashboard_HourlyOP objfailDashboard = new Dashboard_HourlyOP
+                                {
+                                    fail_types = dr["FAILTYPES"].ToString(),
+                                    fail_type_ct = Convert.ToInt32(dr["FAILCOUNT"].ToString()),
+                                    //  Totalcount = Convert.ToInt32(dr["TOTALCOUNT"])
+                                };
+
+                                lstfailtypes.Add(objfailDashboard);
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                return lstfailtypes; // Return empty list on error
+            }
+
+            return lstfailtypes;
+        }
+
+        public List<Dashboard_HourlyOP> getfailtypevalue3filter(Dashboard_HourlyOP dashboard_HourlyOP)
         {
             List<Dashboard_HourlyOP> lstfailtypes = new List<Dashboard_HourlyOP>();
 

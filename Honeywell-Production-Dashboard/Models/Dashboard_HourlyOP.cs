@@ -26,10 +26,14 @@
 
         public int hourvalue { get; set; }
 
+        public int fail_type_id { get; set; }
+
 
         //fail types 
         public string fail_types { get; set; }
         public int fail_type_ct { get; set; }
+
+        public string Date { get; set; }
     }
 
 

@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using System;
+using System.Drawing;
 
 namespace Honeywell_Production_Dashboard.Controllers
 {
@@ -63,6 +64,16 @@ namespace Honeywell_Production_Dashboard.Controllers
             objDashboard3.TestType = string.Empty;
             var dashboardlablosper = interface_DashBoard.getyieldDataOne(objDashboard3);
             return Json(dashboardlablosper);
+        }
+
+        public JsonResult GetHourlyoutput(string Fgname, string type)
+        {
+            Dashboard_HourlyOP objDashboard0 = new Dashboard_HourlyOP();
+            //  objDashboard3.FGName = Fgname.ToString();
+            //objDashboard3.TestType = type.ToString();
+            objDashboard0.TestType = string.Empty;
+            var dashboardhrlyop = interface_DashBoard.gethourlyoutput(objDashboard0);
+            return Json(dashboardhrlyop);
         }
 
         public JsonResult GetHourlyOne(string Fgname, string type)
@@ -172,10 +183,52 @@ namespace Honeywell_Production_Dashboard.Controllers
         public IActionResult DhasBoardInputs(CustomerMasterModel dashboardHourly)
         {
             CustomerMasterModel obj = new CustomerMasterModel();
-           // obj.FGName = dashboardHourly.FGNameText;
+            // obj.FGName = dashboardHourly.FGNameText;
             obj.Type = dashboardHourly.Type;
             return View(obj);
         }
+
+        //public IActionResult DhasBoardInputs1()
+        //{
+        //    var model = new dashboardfilter();
+
+        //    //// Populate your dropdown lists
+        //    //model.ModelList = GetModelList();       // Populate with SelectListItems
+        //    //model.FGNumberList = GetFGNumberList(); // Populate with SelectListItems
+
+        //    return View(model);
+        //}
+
+        // Load Model dropdown on page load
+        [HttpGet]
+        public IActionResult DhasBoardInputs1()
+        {
+            dashboardfilter objDashbrd1 = new dashboardfilter
+            {
+                // Call through interface
+                ModelList = interface_DashBoard.GetModelList(),
+                FGNumberList = new List<SelectListItem>() // empty initially
+            };
+
+            return View(objDashbrd1);
+        }
+
+        [HttpGet]
+        public IActionResult GetFgNumbersByModel(string modelId)
+        {
+            if (string.IsNullOrEmpty(modelId))
+            {
+                return Json(new List<object>()); // return empty list if no model selected
+            }
+
+            // Fetch FG numbers from your interface/service
+   
+            var list = interface_DashBoard.GetFgNumberList(modelId);
+
+            // Return JSON in the format { value, text }
+            return Json(list);
+        }
+
 
         [HttpGet]
         public JsonResult GetChartData(string Fgname, string type)
@@ -275,6 +328,136 @@ namespace Honeywell_Production_Dashboard.Controllers
             var dashbaordfailtypqt = interface_DashBoard.getfailtype2(objoeeDashboardfailty);
             return Json(dashbaordfailtypqt);
         }
+
+
+        //--------------------code for filter
+        public JsonResult GetHourlyoutputfilter(string Fgname, string type, string date)
+        {
+            Dashboard_HourlyOP obj = new Dashboard_HourlyOP();
+            obj.FGName = Fgname;
+            obj.TestType = type;
+            obj.Date = date;
+
+            var data = interface_DashBoard.gethourlyoutputfilter(obj);
+            return Json(data);
+        }
+        public JsonResult GetyieldDataOnefilter(string Fgname, string type, string date)
+        {
+            Dashboard_HourlyOP obj = new Dashboard_HourlyOP();
+            obj.FGName = Fgname;
+            obj.TestType = type;
+            obj.Date = date;
+
+            var data = interface_DashBoard.getyieldDataOnefilter(obj);
+            return Json(data);
+        }
+
+        public JsonResult GetHourlyOnefilter(string Fgname, string type, string date)
+        {
+            Dashboard_HourlyOP obj = new Dashboard_HourlyOP();
+            obj.FGName = Fgname;
+            obj.TestType = type;
+            obj.Date = date;
+
+            var data = interface_DashBoard.gethourlyonefilter(obj);
+            return Json(data);
+        }
+
+        public JsonResult GetyieldDatatwofilter(string Fgname, string type, string date)
+        {
+            Dashboard_HourlyOP obj = new Dashboard_HourlyOP();
+            obj.FGName = Fgname;
+            obj.TestType = type;
+            obj.Date = date;
+
+            var data = interface_DashBoard.getyieldDatatwofilter(obj);
+            return Json(data);
+        }
+
+        public JsonResult GetHourlytwofilter(string Fgname, string type, string date)
+        {
+            Dashboard_HourlyOP obj = new Dashboard_HourlyOP();
+            obj.FGName = Fgname;
+            obj.TestType = type;
+            obj.Date = date;
+
+            var data = interface_DashBoard.gethourlytwofilter(obj);
+            return Json(data);
+        }
+
+        public JsonResult GetyieldDatathreefilter(string Fgname, string type, string date)
+        {
+            Dashboard_HourlyOP obj = new Dashboard_HourlyOP();
+            obj.FGName = Fgname;
+            obj.TestType = type;
+            obj.Date = date;
+
+            var data = interface_DashBoard.getyieldDatathreefilter(obj);
+            return Json(data);
+        }
+
+        public JsonResult GetHourlythreefilter(string Fgname, string type, string date)
+        {
+            Dashboard_HourlyOP obj = new Dashboard_HourlyOP();
+            obj.FGName = Fgname;
+            obj.TestType = type;
+            obj.Date = date;
+
+            var data = interface_DashBoard.gethourlythreefilter(obj);
+            return Json(data);
+        }
+
+
+        public JsonResult GetFailTypes1filter(string Fgname, string type, string date)
+        {
+            Dashboard_HourlyOP obj = new Dashboard_HourlyOP();
+            obj.FGName = Fgname;
+            obj.TestType = type;
+            obj.Date = date;
+
+            var data = interface_DashBoard.getfailtype1filter(obj);
+            return Json(data);
+        }
+
+        public JsonResult GetFailTypes2filter(string Fgname, string type, string date)
+        {
+            Dashboard_HourlyOP obj = new Dashboard_HourlyOP();
+            obj.FGName = Fgname;
+            obj.TestType = type;
+            obj.Date = date;
+
+            var data = interface_DashBoard.getfailtype2filter(obj);
+            return Json(data);
+        }
+
+        public JsonResult GetFailTypes3filter(string Fgname, string type, string date)
+        {
+            Dashboard_HourlyOP obj = new Dashboard_HourlyOP();
+            obj.FGName = Fgname;
+            obj.TestType = type;
+            obj.Date = date;
+
+            var data = interface_DashBoard.getfailtype3filter(obj);
+            return Json(data);
+        }
+
+        public JsonResult GetFailBreakdownbyfiler(string Fgname, string type, string date,int failtypeid)
+        {
+            Dashboard_HourlyOP objoeeDashboardfailty = new Dashboard_HourlyOP();
+             objoeeDashboardfailty.FGName = Fgname.ToString();
+            objoeeDashboardfailty.TestType = type.ToString();
+            objoeeDashboardfailty.Date = date;
+            objoeeDashboardfailty.fail_type_id = failtypeid;
+            var dashbaordfailtypqt = interface_DashBoard.getfailtypefilter(objoeeDashboardfailty);
+            return Json(dashbaordfailtypqt);
+        }
+
+
+
+
+
+
+
 
 
     }

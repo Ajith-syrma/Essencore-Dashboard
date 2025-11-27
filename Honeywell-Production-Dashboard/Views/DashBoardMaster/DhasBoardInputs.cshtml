@@ -162,6 +162,25 @@
 </style>
 <div>
     <div class="container-lg">
+
+            <div style="text-align:right; margin:15px 0;">
+                <form asp-action="DhasBoardInputs1" method="get">
+                    <button type="submit" class="btn btn-primary">
+                        Filter by Date
+                    </button>
+                </form>
+            </div>
+
+            <div class="dashboard-container">
+                <div class="chart-row">
+
+                    <div class="chart-card full-width">
+                        <div class="spinner" id="spinnerBarChart"></div>
+                        <canvas id="BarGraphFull"></canvas>
+                    </div>
+
+                </div>
+            </div>
       
             <div class="dashboard-container">
                 <!-- Row 1 -->
@@ -341,6 +360,88 @@
             (B < 255 ? (B < 1 ? 0 : B) : 255)
         ).toString(16).slice(1);
     }
+
+          $.get('/DashBoardMaster/GetHourlyoutput', { Fgname: fgname, Type: type }, function (data) {
+         $('#spinnerBarChart').hide();
+        if (!data || data.length === 0) return;
+
+        // Extract labels and values dynamically from API
+        const labels = data.map(d => d.hour);
+        const values = data.map(d => parseFloat(d.hourvalue ?? 0));
+        const targets = data.map(d => parseFloat(d.target ?? 0));
+
+        // Set bar colors based on yield value
+        const barColors = values.map(v => v >= 90 ? '#2ecc71' : '#e74c3c');
+
+        // Chart setup
+        const ctx = document.getElementById('BarGraphFull').getContext('2d');
+        if (window.hourlyOutputFull) window.hourlyOutputFull.destroy();
+
+        window.hourlyOutputFull  = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [
+                    // {
+                    //     type: 'line',
+                    //     label: 'Target',
+                    //     data: targets,
+                    //     borderColor: '#f1c40f',
+                    //     borderWidth: 3,
+                    //     tension: 0.3,
+                    //     pointBackgroundColor: '#f39c12',
+                    //     fill: false,
+                    //     yAxisID: 'y',
+                    // },
+                      {
+                        type: 'bar',
+                        label: 'Actual',
+                        data: values,
+                        backgroundColor: barColors,
+                        borderColor: '#2980b9',
+                        borderWidth: 1,
+                        yAxisID: 'y',
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { position: 'bottom' },
+                    title: {
+                        display: true,
+                        text: 'Hourly Output',
+                        font: { weight: 'bold', size: 16 }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: context => `${context.dataset.label}: ${context.raw.toFixed(2)}`
+                        }
+                    },
+                    datalabels: {
+                        anchor: 'end',
+                        align: 'bottom',
+                        clamp: true,
+                        color: '#000',
+                        font: { weight: 'bold' },
+                        formatter: value => value.toFixed(1)
+                    }
+                },
+                scales: {
+                    x: {
+                        title: { display: true, text: 'Hour' }
+                    },
+                    y: {
+                        beginAtZero: true,
+                        title: { display: true, text: 'Output' },
+                        max: 100
+                    }
+                },
+                maintainAspectRatio: false
+            },
+            plugins: [ChartDataLabels]
+        });
+    });
 
     //   $.get('/DashBoardMaster/GetyieldDataOne', { Fgname: fgname, Type: type }, function (datay) {
     //     $('#spinnerPieone').hide();
