@@ -441,13 +441,13 @@ namespace Honeywell_Production_Dashboard.Controllers
             return Json(data);
         }
 
-        public JsonResult GetFailBreakdownbyfiler(string Fgname, string type, string date,int failtypeid)
+        public JsonResult GetFailBreakdownbyfiler(string Fgname, string type, string date,int failtype)
         {
             Dashboard_HourlyOP objoeeDashboardfailty = new Dashboard_HourlyOP();
              objoeeDashboardfailty.FGName = Fgname.ToString();
             objoeeDashboardfailty.TestType = type.ToString();
             objoeeDashboardfailty.Date = date;
-            objoeeDashboardfailty.fail_type_id = failtypeid;
+            objoeeDashboardfailty.fail_type_id = failtype;
             var dashbaordfailtypqt = interface_DashBoard.getfailtypefilter(objoeeDashboardfailty);
             return Json(dashbaordfailtypqt);
         }

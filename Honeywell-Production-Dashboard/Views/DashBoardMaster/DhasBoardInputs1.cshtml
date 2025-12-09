@@ -92,6 +92,80 @@
         font-size: 22px;
         font-weight: bold;
     }
+
+  /*   check */
+    /* Modal overlay */
+    .modal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.6);
+        display: none;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+    }
+
+    /* Modal box */
+    .modal-content {
+        background: white;
+        width: 850px; /* Wider for clearer charts */
+        max-width: 95%;
+        padding: 20px 25px;
+        border-radius: 12px;
+        position: relative;
+        box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+        animation: fadeInScale 0.3s ease;
+    }
+
+    /* Close (X) button */
+    .close-btn {
+        position: absolute;
+        top: 12px;
+        right: 18px;
+        font-size: 26px;
+        cursor: pointer;
+        font-weight: bold;
+    }
+
+    /* Modal heading */
+    .modal-title {
+        text-align: center;
+        margin-bottom: 20px;
+        font-size: 22px;
+        font-weight: 600;
+    }
+
+    /* Chart container that forces Chart.js to scale properly */
+    .chart-container {
+        width: 100%;
+        height: 380px; /* Perfect size for clear labels */
+        position: relative;
+    }
+
+    /* Canvas styling */
+    #failBreakdownChart {
+        width: 100% !important;
+        height: 100% !important;
+    }
+
+    /* Animation */
+    @@keyframes fadeInScale {
+        from
+
+    {
+        opacity: 0;
+        transform: scale(0.9);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+
+    }
 </style>
 
 <!-- ====================================== -->
@@ -193,14 +267,19 @@
 </div>
 
 
-<!-- Fail Modal -->
+<!-- Fail Breakdown Modal -->
 <div id="failModal" class="modal">
     <div class="modal-content">
-        <span id="closeFailModal">&times;</span>
-        <h3 style="text-align:center; margin-bottom:20px;">Fail Breakdown</h3>
-        <canvas id="failBreakdownChart" height="230"></canvas>
+        <span id="closeFailModal" class="close-btn">&times;</span>
+
+        <h3 class="modal-title">Fail Breakdown</h3>
+
+        <div class="chart-container">
+            <canvas id="failBreakdownChart"></canvas>
+        </div>
     </div>
 </div>
+
 
 
 <script>
@@ -252,7 +331,7 @@
         // ---------------------------
         // PIE CHART FUNCTION
         // ---------------------------
-       function loadPieChart(canvasId, spinnerId, url, failTypeId = 1, chartTitle) {
+       function loadPieChart(canvasId, spinnerId, url, failTypeId, chartTitle) {
         debugger; // Step through this in DevTools
         $('#' + spinnerId).show();
         console.log(`Loading pie chart for canvas: ${canvasId}, URL: ${url}, failTypeId: ${failTypeId}`);
@@ -422,32 +501,79 @@
             });
         }
 
-        // ---------------------------
-        // FAIL BREAKDOWN
-        // ---------------------------
-        function loadFailBreakdown(failTypeId) {
-            
+         function loadFailBreakdown(failTypeId) {
+
             $.get("/DashBoardMaster/GetFailBreakdownbyfiler",
-                { Fgname: fgname, Type: type, Date: selectedDate, failtype: failTypeId },
-                function(result) {
-                    const canvasId = "failBreakdownChart";
+                {
+                    Fgname: fgname,
+                    Type: type,
+                    Date: selectedDate,
+                    failtype: failTypeId
+                },
+                function (data) {
 
-                    console.log("Fail Breakdown Labels:", result.labels);
-                    console.log("Fail Breakdown Values:", result.values);
+                    console.log("Fail Breakdown Response:", data);
 
-                    if (window[canvasId] && typeof window[canvasId].destroy === "function") {
-                        window[canvasId].destroy();
-                    }
+                    // If no data returned
+                    if (!data || data.length === 0) return;
 
-                    window[canvasId] = new Chart(document.getElementById(canvasId), {
-                        type: 'bar',
-                        data: { labels: result.labels, datasets: [{ label: "Fail Count", data: result.values, backgroundColor: "#c0392b" }] },
-                        options: { responsive: true, scales: { y: { beginAtZero: true } } }
-                    });
+                    // Convert response to chart labels & values (based on your structure)
+                    const labels = data.map(x => x.fail_types);
+                    const values = data.map(x => x.fail_type_ct);
 
+                    // Render chart
+                    renderFailBreakdownChart(labels, values);
+
+                    // Open modal
                     $("#failModal").show();
-                });
+
+                    // Ensure chart resizes AFTER modal becomes visible
+                    setTimeout(() => {
+                        if (window["failBreakdownChart"]) {
+                            window["failBreakdownChart"].resize();
+                        }
+                    }, 200);
+                }
+            );
+            }
+
+
+        function renderFailBreakdownChart(labels, values) {
+
+            const canvasId = "failBreakdownChart";
+
+            // Destroy old chart safely
+            if (window[canvasId] && typeof window[canvasId].destroy === "function") {
+                window[canvasId].destroy();
+            }
+
+            window[canvasId] = new Chart(document.getElementById(canvasId), {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: "Fail Count",
+                        data: values,
+                        backgroundColor: "#c0392b"
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: { display: true, text: "Count" }
+                        },
+                        x: {
+                            title: { display: true, text: "Fail Types" }
+                        }
+                    }
+                }
+            });
         }
+
+
 
         // ---------------------------
         // LOAD ALL CHARTS
