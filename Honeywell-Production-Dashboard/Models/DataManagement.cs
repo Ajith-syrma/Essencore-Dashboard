@@ -1745,8 +1745,11 @@ namespace Honeywell_Production_Dashboard.Models
 
                         // sqlcmdyield.Parameters.AddWithValue("@type", "HOURLY");
                         sqlcmdop.Parameters.AddWithValue("@fgname", dashboard_HourlyOP.FGName);
-                        sqlcmdop.Parameters.AddWithValue("@date", dashboard_HourlyOP.Date);
-
+                        //sqlcmdop.Parameters.AddWithValue("@date", dashboard_HourlyOP.Date);
+                        sqlcmdop.Parameters.AddWithValue("@fdate", dashboard_HourlyOP.fdate);
+                        sqlcmdop.Parameters.AddWithValue("@tdate", dashboard_HourlyOP.tdate);
+                        sqlcmdop.Parameters.AddWithValue("@ftime", dashboard_HourlyOP.ftime);
+                        sqlcmdop.Parameters.AddWithValue("@ttime", dashboard_HourlyOP.ttime);
                         sqlcmdop.Parameters.AddWithValue("@stage_name", "Mem Test");
                         sqlcmdop.Parameters.AddWithValue("@stage_id", 239);
                         //sqlcmdop.Parameters.AddWithValue("@shiftvalue", shift);
@@ -1803,8 +1806,11 @@ namespace Honeywell_Production_Dashboard.Models
 
                         // sqlcmdyield.Parameters.AddWithValue("@type", "HOURLY");
                         sqlcmdyield.Parameters.AddWithValue("@fgname", dashboard_HourlyOP.FGName);
-                        sqlcmdyield.Parameters.AddWithValue("@date", dashboard_HourlyOP.Date);
-
+                        //sqlcmdyield.Parameters.AddWithValue("@date", dashboard_HourlyOP.Date);
+                        sqlcmdyield.Parameters.AddWithValue("@fdate", dashboard_HourlyOP.fdate);
+                        sqlcmdyield.Parameters.AddWithValue("@tdate", dashboard_HourlyOP.tdate);
+                        sqlcmdyield.Parameters.AddWithValue("@ftime", dashboard_HourlyOP.ftime);
+                        sqlcmdyield.Parameters.AddWithValue("@ttime", dashboard_HourlyOP.ttime);
                         sqlcmdyield.Parameters.AddWithValue("@stage_name", "SPD");
                         sqlcmdyield.Parameters.AddWithValue("@stage_id", 202);
                        // sqlcmdyield.Parameters.AddWithValue("@shiftvalue", shift);
@@ -1859,11 +1865,14 @@ namespace Honeywell_Production_Dashboard.Models
 
                         //sqlcmdyield.Parameters.AddWithValue("@type", "HOURLY");
                         sqlcmdyield.Parameters.AddWithValue("@fgname", dashboard_HourlyOP.FGName);
-                        sqlcmdyield.Parameters.AddWithValue("@date", dashboard_HourlyOP.Date);
+                        //sqlcmdyield.Parameters.AddWithValue("@date", dashboard_HourlyOP.Date);
                         //sqlcmdyield.Parameters.AddWithValue("@Stagevalue", "Case Test");
                         //sqlcmdyield.Parameters.AddWithValue("@dateval", "31-10-2025");
                         //sqlcmdyield.Parameters.AddWithValue("@targetval", "85");
-
+                        sqlcmdyield.Parameters.AddWithValue("@fdate", dashboard_HourlyOP.fdate);
+                        sqlcmdyield.Parameters.AddWithValue("@tdate", dashboard_HourlyOP.tdate);
+                        sqlcmdyield.Parameters.AddWithValue("@ftime", dashboard_HourlyOP.ftime);
+                        sqlcmdyield.Parameters.AddWithValue("@ttime", dashboard_HourlyOP.ttime);
                         sqlcmdyield.Parameters.AddWithValue("@stage_name", "Mem Test");
                         sqlcmdyield.Parameters.AddWithValue("@stage_id", 239);
                        // sqlcmdyield.Parameters.AddWithValue("@shiftvalue", shift);
@@ -1918,11 +1927,15 @@ namespace Honeywell_Production_Dashboard.Models
 
                         //sqlcmdyield.Parameters.AddWithValue("@type", "HOURLY");
                         sqlcmdyield.Parameters.AddWithValue("@fgname", dashboard_HourlyOP.FGName);
-                        sqlcmdyield.Parameters.AddWithValue("@date", dashboard_HourlyOP.Date);
+                        //sqlcmdyield.Parameters.AddWithValue("@date", dashboard_HourlyOP.Date);
                         //sqlcmdyield.Parameters.AddWithValue("@Stagevalue", "FCT");
                         //sqlcmdyield.Parameters.AddWithValue("@dateval", "31-10-2025");
                         //sqlcmdyield.Parameters.AddWithValue("@targetval", "85");
 
+                        sqlcmdyield.Parameters.AddWithValue("@fdate", dashboard_HourlyOP.fdate);
+                        sqlcmdyield.Parameters.AddWithValue("@tdate", dashboard_HourlyOP.tdate);
+                        sqlcmdyield.Parameters.AddWithValue("@ftime", dashboard_HourlyOP.ftime);
+                        sqlcmdyield.Parameters.AddWithValue("@ttime", dashboard_HourlyOP.ttime);
 
                         sqlcmdyield.Parameters.AddWithValue("@stage_name", "Pass Mark Test");
                         sqlcmdyield.Parameters.AddWithValue("@stage_id", 239);
@@ -1980,10 +1993,13 @@ namespace Honeywell_Production_Dashboard.Models
                         sqlcmdyield.CommandType = CommandType.StoredProcedure;
                         //sqlcmdyield.Parameters.AddWithValue("@type", "YIELD");
                         sqlcmdyield.Parameters.AddWithValue("@fgname", dashboard_HourlyOP.FGName);
-                        sqlcmdyield.Parameters.AddWithValue("@date", dashboard_HourlyOP.Date);
+                        //sqlcmdyield.Parameters.AddWithValue("@date", dashboard_HourlyOP.Date);
                         //sqlcmdyield.Parameters.AddWithValue("@dateval", "31-10-2025");
                         //sqlcmdyield.Parameters.AddWithValue("@targetval", "85");
-
+                        sqlcmdyield.Parameters.AddWithValue("@fdate", dashboard_HourlyOP.fdate);
+                        sqlcmdyield.Parameters.AddWithValue("@tdate", dashboard_HourlyOP.tdate);
+                        sqlcmdyield.Parameters.AddWithValue("@ftime", dashboard_HourlyOP.ftime);
+                        sqlcmdyield.Parameters.AddWithValue("@ttime", dashboard_HourlyOP.ttime);
                         sqlcmdyield.Parameters.AddWithValue("@stage_name", "SPD");
                         sqlcmdyield.Parameters.AddWithValue("@stage_id", 202);
                         //sqlcmdyield.Parameters.AddWithValue("@shiftvalue", shift);
@@ -2037,10 +2053,13 @@ namespace Honeywell_Production_Dashboard.Models
 
                         //sqlcmdyield.Parameters.AddWithValue("@type", "YIELD");
                         sqlcmdyield.Parameters.AddWithValue("@fgname", dashboard_HourlyOP.FGName);
-                        sqlcmdyield.Parameters.AddWithValue("@date", dashboard_HourlyOP.Date);
+                        //sqlcmdyield.Parameters.AddWithValue("@date", dashboard_HourlyOP.Date);
                         //sqlcmdyield.Parameters.AddWithValue("@dateval", "31-10-2025");
                         //sqlcmdyield.Parameters.AddWithValue("@targetval", "85");
-
+                        sqlcmdyield.Parameters.AddWithValue("@fdate", dashboard_HourlyOP.fdate);
+                        sqlcmdyield.Parameters.AddWithValue("@tdate", dashboard_HourlyOP.tdate);
+                        sqlcmdyield.Parameters.AddWithValue("@ftime", dashboard_HourlyOP.ftime);
+                        sqlcmdyield.Parameters.AddWithValue("@ttime", dashboard_HourlyOP.ttime);
                         sqlcmdyield.Parameters.AddWithValue("@stage_name", "Mem Test");
                         sqlcmdyield.Parameters.AddWithValue("@stage_id", 239);
                        // sqlcmdyield.Parameters.AddWithValue("@shiftvalue", shift);
@@ -2097,10 +2116,13 @@ namespace Honeywell_Production_Dashboard.Models
 
                         //sqlcmdyield.Parameters.AddWithValue("@type", "YIELD");
                         sqlcmdyield.Parameters.AddWithValue("@fgname", dashboard_HourlyOP.FGName);
-                        sqlcmdyield.Parameters.AddWithValue("@date", dashboard_HourlyOP.Date);
+                        //sqlcmdyield.Parameters.AddWithValue("@date", dashboard_HourlyOP.Date);
                         //sqlcmdyield.Parameters.AddWithValue("@dateval", "31-10-2025");
                         //sqlcmdyield.Parameters.AddWithValue("@targetval", "85");
-
+                        sqlcmdyield.Parameters.AddWithValue("@fdate", dashboard_HourlyOP.fdate);
+                        sqlcmdyield.Parameters.AddWithValue("@tdate", dashboard_HourlyOP.tdate);
+                        sqlcmdyield.Parameters.AddWithValue("@ftime", dashboard_HourlyOP.ftime);
+                        sqlcmdyield.Parameters.AddWithValue("@ttime", dashboard_HourlyOP.ttime);
 
                         sqlcmdyield.Parameters.AddWithValue("@stage_name", "Pass Mark Test");
                         sqlcmdyield.Parameters.AddWithValue("@stage_id", 240);

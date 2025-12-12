@@ -34,6 +34,13 @@
         public int fail_type_ct { get; set; }
 
         public string Date { get; set; }
+
+        public string fdate { get; set; }
+        public string ftime { get; set; } 
+
+        public string tdate {  get; set; }
+
+        public string ttime { get; set; }
     }
 
 
