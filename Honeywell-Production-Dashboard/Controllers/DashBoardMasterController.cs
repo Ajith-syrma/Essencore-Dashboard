@@ -331,111 +331,131 @@ namespace Honeywell_Production_Dashboard.Controllers
 
 
         //--------------------code for filter
-        public JsonResult GetHourlyoutputfilter(string Fgname, string type, string date)
+        public JsonResult GetHourlyoutputfilter(string Fgname, string type, string fdate, string tdate, string ftime,string ttime)
         {
             Dashboard_HourlyOP obj = new Dashboard_HourlyOP();
             obj.FGName = Fgname;
             obj.TestType = type;
-            obj.Date = date;
-
+            obj.fdate = fdate;
+            obj.tdate = tdate;
+            obj.ftime = ftime;
+            obj.ttime = ttime;
             var data = interface_DashBoard.gethourlyoutputfilter(obj);
             return Json(data);
         }
-        public JsonResult GetyieldDataOnefilter(string Fgname, string type, string date)
+        public JsonResult GetyieldDataOnefilter(string Fgname, string type, string fdate, string tdate, string ftime, string ttime)
         {
             Dashboard_HourlyOP obj = new Dashboard_HourlyOP();
             obj.FGName = Fgname;
             obj.TestType = type;
-            obj.Date = date;
-
+            //obj.Date = fdate;
+            obj.fdate = fdate;
+            obj.tdate = tdate;
+            obj.ftime = ftime;
+            obj.ttime = ttime;
             var data = interface_DashBoard.getyieldDataOnefilter(obj);
             return Json(data);
         }
 
-        public JsonResult GetHourlyOnefilter(string Fgname, string type, string date)
+        public JsonResult GetHourlyOnefilter(string Fgname, string type, string fdate, string tdate, string ftime, string ttime)
         {
             Dashboard_HourlyOP obj = new Dashboard_HourlyOP();
             obj.FGName = Fgname;
             obj.TestType = type;
-            obj.Date = date;
-
+            //obj.Date = fdate;
+            obj.fdate = fdate;
+            obj.tdate = tdate;
+            obj.ftime = ftime;
+            obj.ttime = ttime;
             var data = interface_DashBoard.gethourlyonefilter(obj);
             return Json(data);
         }
 
-        public JsonResult GetyieldDatatwofilter(string Fgname, string type, string date)
+        public JsonResult GetyieldDatatwofilter(string Fgname, string type, string fdate, string tdate, string ftime, string ttime)
         {
             Dashboard_HourlyOP obj = new Dashboard_HourlyOP();
             obj.FGName = Fgname;
             obj.TestType = type;
-            obj.Date = date;
-
+            //obj.Date = fdate;
+            obj.fdate = fdate;
+            obj.tdate = tdate;
+            obj.ftime = ftime;
+            obj.ttime = ttime;
             var data = interface_DashBoard.getyieldDatatwofilter(obj);
             return Json(data);
         }
 
-        public JsonResult GetHourlytwofilter(string Fgname, string type, string date)
+        public JsonResult GetHourlytwofilter(string Fgname, string type, string fdate, string tdate, string ftime, string ttime)
         {
             Dashboard_HourlyOP obj = new Dashboard_HourlyOP();
             obj.FGName = Fgname;
             obj.TestType = type;
-            obj.Date = date;
-
+            //obj.Date = fdate;
+            obj.fdate = fdate;
+            obj.tdate = tdate;
+            obj.ftime = ftime;
+            obj.ttime = ttime;
             var data = interface_DashBoard.gethourlytwofilter(obj);
             return Json(data);
         }
 
-        public JsonResult GetyieldDatathreefilter(string Fgname, string type, string date)
+        public JsonResult GetyieldDatathreefilter(string Fgname, string type, string fdate, string tdate, string ftime, string ttime)
         {
             Dashboard_HourlyOP obj = new Dashboard_HourlyOP();
             obj.FGName = Fgname;
             obj.TestType = type;
-            obj.Date = date;
-
+            //obj.Date = fdate;
+            obj.fdate = fdate;
+            obj.tdate = tdate;
+            obj.ftime = ftime;
+            obj.ttime = ttime;
             var data = interface_DashBoard.getyieldDatathreefilter(obj);
             return Json(data);
         }
 
-        public JsonResult GetHourlythreefilter(string Fgname, string type, string date)
+        public JsonResult GetHourlythreefilter(string Fgname, string type, string fdate, string tdate, string ftime, string ttime)
         {
             Dashboard_HourlyOP obj = new Dashboard_HourlyOP();
             obj.FGName = Fgname;
             obj.TestType = type;
-            obj.Date = date;
-
+            //obj.Date = fdate;
+            obj.fdate = fdate;
+            obj.tdate = tdate;
+            obj.ftime = ftime;
+            obj.ttime = ttime;
             var data = interface_DashBoard.gethourlythreefilter(obj);
             return Json(data);
         }
 
 
-        public JsonResult GetFailTypes1filter(string Fgname, string type, string date)
+        public JsonResult GetFailTypes1filter(string Fgname, string type, string fdate, string tdate, string ftime, string ttime)
         {
             Dashboard_HourlyOP obj = new Dashboard_HourlyOP();
             obj.FGName = Fgname;
             obj.TestType = type;
-            obj.Date = date;
+            obj.Date = fdate;
 
             var data = interface_DashBoard.getfailtype1filter(obj);
             return Json(data);
         }
 
-        public JsonResult GetFailTypes2filter(string Fgname, string type, string date)
+        public JsonResult GetFailTypes2filter(string Fgname, string type, string fdate, string tdate, string ftime, string ttime)
         {
             Dashboard_HourlyOP obj = new Dashboard_HourlyOP();
             obj.FGName = Fgname;
             obj.TestType = type;
-            obj.Date = date;
+            obj.Date = fdate;
 
             var data = interface_DashBoard.getfailtype2filter(obj);
             return Json(data);
         }
 
-        public JsonResult GetFailTypes3filter(string Fgname, string type, string date)
+        public JsonResult GetFailTypes3filter(string Fgname, string type, string fdate, string tdate, string ftime, string ttime)
         {
             Dashboard_HourlyOP obj = new Dashboard_HourlyOP();
             obj.FGName = Fgname;
             obj.TestType = type;
-            obj.Date = date;
+            obj.Date = fdate;
 
             var data = interface_DashBoard.getfailtype3filter(obj);
             return Json(data);
