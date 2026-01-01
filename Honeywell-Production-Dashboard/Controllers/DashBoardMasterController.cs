@@ -325,7 +325,7 @@ namespace Honeywell_Production_Dashboard.Controllers
             //objDashboard3.TestType = type.ToString();
             //objoeeDashboardfailty.fail_types = string.Empty;
             //objoeeDashboardfailty.fail_type_ct = 0;
-            var dashbaordfailtypqt = interface_DashBoard.getfailtype2(objoeeDashboardfailty);
+            var dashbaordfailtypqt = interface_DashBoard.getfailtype3(objoeeDashboardfailty);
             return Json(dashbaordfailtypqt);
         }
 

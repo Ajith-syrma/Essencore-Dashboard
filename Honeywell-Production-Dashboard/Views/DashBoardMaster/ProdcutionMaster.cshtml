@@ -142,7 +142,7 @@
 
     });
     $('#ddlFgName').on('change', function () {
-        debugger;
+        // debugger;
         var selectedText = $('#ddlFgName option:selected').text();
         $('#FGNameText').val(selectedText); // Store text in hidden input
         var cusid=$('#ddlcustomers').val();
@@ -168,7 +168,7 @@
         }
     });
     $('#ddlcustomers').on('change', function () {
-        debugger;
+        // debugger;
         var Cusid = $('#ddlcustomers').val();
         //  alert(Cusid);
         $.ajax({
@@ -179,7 +179,7 @@
             success: function (data) {
                 $('#ddlFgName').empty();
                 $.each(data, function (index, item) {
-                    debugger;
+                    // debugger;
                     $('#ddlFgName').append($('<option>', {
                         value: item.value,
                         text: item.text

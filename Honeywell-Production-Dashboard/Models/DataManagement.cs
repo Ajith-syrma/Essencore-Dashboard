@@ -14,6 +14,7 @@ namespace Honeywell_Production_Dashboard.Models
         private readonly string ConnectionString;
         private readonly string Prod_ConnectionString;
         private readonly string A4;
+        private readonly string Essencore_Prod;
         private readonly string barcodecon;
         public DataManagement(IConfiguration configuration)
         {
@@ -21,6 +22,7 @@ namespace Honeywell_Production_Dashboard.Models
             ConnectionString = configuration.GetConnectionString("conn");
             Prod_ConnectionString = configuration.GetConnectionString("connProdcurtion");
             A4 = configuration.GetConnectionString("connProdcurtionA4");
+            Essencore_Prod = configuration.GetConnectionString("connProdEssencore");
         }
 
         public List<SelectListItem> getcustomername()
@@ -1005,7 +1007,7 @@ namespace Honeywell_Production_Dashboard.Models
 
 
                         sqlcmdyield.Parameters.AddWithValue("@stage_name", "Pass Mark Test");
-                        sqlcmdyield.Parameters.AddWithValue("@stage_id", 239);
+                        sqlcmdyield.Parameters.AddWithValue("@stage_id", 240);
                         sqlcmdyield.Parameters.AddWithValue("@shiftvalue", shift);
                         //sqlcmdyield.Parameters.AddWithValue("@targetval", "85");
 
@@ -1301,7 +1303,7 @@ namespace Honeywell_Production_Dashboard.Models
                         sqlcmdyield.Parameters.AddWithValue("@stage_name", "Pass Mark Test");
                         sqlcmdyield.Parameters.AddWithValue("@stage_id", 240);
                         sqlcmdyield.Parameters.AddWithValue("@shiftvalue", shift);
-                        sqlcmdyield.Parameters.AddWithValue("@targetval", "85");
+                        //sqlcmdyield.Parameters.AddWithValue("@targetval", "85");
 
                         SqlDataAdapter dyhourly = new SqlDataAdapter(sqlcmdyield);
                         DataTable dtyhourly = new DataTable();
@@ -1613,7 +1615,7 @@ namespace Honeywell_Production_Dashboard.Models
                 var date = DateTime.Now.Date;
                 string shift = GetShiftLabel(DateTime.Now);
 
-                using (SqlConnection sqlConn = new SqlConnection(A4))
+                using (SqlConnection sqlConn = new SqlConnection(Essencore_Prod))
                 {
                     using (SqlCommand cmd = new SqlCommand("pro_getfailtypes", sqlConn))
                     {
@@ -1671,7 +1673,7 @@ namespace Honeywell_Production_Dashboard.Models
                 var date = DateTime.Now.Date;
                 string shift = GetShiftLabel(DateTime.Now);
 
-                using (SqlConnection sqlConn = new SqlConnection(A4))
+                using (SqlConnection sqlConn = new SqlConnection(Essencore_Prod))
                 {
                     using (SqlCommand cmd = new SqlCommand("pro_getfailtypes", sqlConn))
                     {
@@ -1925,7 +1927,7 @@ namespace Honeywell_Production_Dashboard.Models
 
 
                         sqlcmdyield.Parameters.AddWithValue("@stage_name", "Pass Mark Test");
-                        sqlcmdyield.Parameters.AddWithValue("@stage_id", 239);
+                        sqlcmdyield.Parameters.AddWithValue("@stage_id", 240);
                         //sqlcmdyield.Parameters.AddWithValue("@shiftvalue", shift);
                         //sqlcmdyield.Parameters.AddWithValue("@targetval", "85");
 

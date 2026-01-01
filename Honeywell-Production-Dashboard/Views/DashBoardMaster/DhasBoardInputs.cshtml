@@ -164,7 +164,7 @@
     <div class="container-lg">
 
             <div style="text-align:right; margin:15px 0;">
-                <form asp-action="DhasBoardInputs1" method="get">
+                <form asp-action="DhasBoardInputs1" method="get" style="display:none;">
                     <button type="submit" class="btn btn-primary">
                         Filter by Date
                     </button>
@@ -292,7 +292,7 @@
         </span>
 
         <h3 style="text-align:center; margin-bottom:20px;">Fail Breakdown</h3>
-        <canvas id="failBreakdownChart" height="230"></canvas>
+        <canvas id="failBreakdownChart"  height="230"></canvas>
     </div>
 </div>
 
@@ -310,7 +310,7 @@
 </style>
 
 <script>
-    debugger;
+  const loadAllCharts = () => {
       const centerTextPlugin = {
         id: 'centerText',
         beforeDraw(chart) {
@@ -434,7 +434,7 @@
                     y: {
                         beginAtZero: true,
                         title: { display: true, text: 'Output' },
-                        max: 100
+                        max: 200
                     }
                 },
                 maintainAspectRatio: false
@@ -543,7 +543,7 @@
                 ctx.fillStyle = '#000';
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'middle';
-                ctx.fillText(`Total: ${totalCount}`, width / 2, height / 2);
+                ctx.fillText(`Yield: ${totalCount}`, width / 2, height / 2);
                 ctx.restore();
             }
         };
@@ -644,6 +644,27 @@
             },
             options: {
                 responsive: true,
+                indexAxis: 'x', // vertical bars
+                scales: {
+                    x: {
+                        ticks: {
+                            display: false // ✅ hide labels at the bottom
+                        },
+                        title: {
+                            display: true,
+                            text: 'Fail Types',
+                            font: { size: 14, weight: 'bold' }
+                        }
+                    },
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Count',
+                            font: { size: 14, weight: 'bold' }
+                        }
+                    }
+                },
                 plugins: {
                     legend: { display: false }
                 }
@@ -660,11 +681,6 @@
     }
 
     document.getElementById("closeFailModal").onclick = closeFailModal;
-
-
-
-
-
 
 
         $.get('/DashBoardMaster/GetHourlyOne', { Fgname: fgname, Type: type }, function (data) {
@@ -742,7 +758,7 @@
                     y: {
                         beginAtZero: true,
                         title: { display: true, text: 'Output' },
-                        max: 100
+                        max: 250
                     }
                 },
                 maintainAspectRatio: false
@@ -852,7 +868,7 @@
                 ctx.fillStyle = '#000';
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'middle';
-                ctx.fillText(`Total: ${totalCount}`, width / 2, height / 2);
+                ctx.fillText(`Yield: ${totalCount}`, width / 2, height / 2);
                 ctx.restore();
             }
         };
@@ -926,6 +942,9 @@
             }
         );
     }
+
+  
+
 
 
       $.get('/DashBoardMaster/GetHourlytwo', { Fgname: fgname, Type: type }, function (data) {
@@ -1001,7 +1020,7 @@
                     y: {
                         beginAtZero: true,
                         title: { display: true, text: 'Output' },
-                        max: 100
+                        max: 200
                     }
                 },
                 maintainAspectRatio: false
@@ -1013,7 +1032,7 @@
           $('#spinnerPiethree').hide();
         if (!data || data.length === 0) return;
 
-        debugger;
+       // debugger;
         console.log(data);
 
         // Extract and prepare data
@@ -1039,7 +1058,7 @@
                 ctx.fillStyle = '#000';
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'middle';
-                ctx.fillText(`Total: ${totalCount}`, width / 2, height / 2);
+                ctx.fillText(`Yield: ${totalCount}`, width / 2, height / 2);
                 ctx.restore();
             }
         };
@@ -1189,7 +1208,7 @@
                     y: {
                         beginAtZero: true,
                         title: { display: true, text: 'Output' },
-                        max: 100
+                        max: 10
                     }
                 },
                 maintainAspectRatio: false
@@ -1197,6 +1216,16 @@
             plugins: [ChartDataLabels]
         });
     });
+
+  };
+    // Initial load
+$(document).ready(function () {
+    Chart.register(ChartDataLabels);
+    loadAllCharts();
+
+    // Auto-refresh every 10 seconds (10,000 ms)
+    setInterval(loadAllCharts, 5000);
+});
     //    $.get('/DashBoardMaster/GetyieldDatafour', { Fgname: fgname, Type: type }, function (datax) {
     //          $('#spinnerPiefour').hide();
     //     if (!datax || datax.length === 0) return;
